@@ -53,39 +53,41 @@
 
 @plugin "tailwindcss-animate";
 
-/* ── Design Tokens ── */
+/* ── Design Tokens (Production Palette) ── */
+
+/* Light mode */
 :root {
-  --background: #E8EDF5;
-  --foreground: #080B14;
+  --background: #F8FAFC;
+  --foreground: #0F172A;
   --card: #FFFFFF;
-  --card-foreground: #080B14;
+  --card-foreground: #0F172A;
   --popover: #FFFFFF;
-  --popover-foreground: #080B14;
-  --primary: #2DFFA0;
-  --primary-foreground: #060A12;
-  --secondary: #0C1020;
-  --secondary-foreground: #E8EDF5;
-  --muted: #131823;
-  --muted-foreground: #7A8499;
-  --accent: #2DFFA0;
-  --accent-foreground: #060A12;
-  --destructive: #FF5C5C;
+  --popover-foreground: #0F172A;
+  --primary: #10B981;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F1F5F9;
+  --secondary-foreground: #0F172A;
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
+  --accent: #10B981;
+  --accent-foreground: #FFFFFF;
+  --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
-  --border: #1A2235;
-  --input: #1A2235;
-  --ring: #2DFFA0;
+  --border: #E2E8F0;
+  --input: #E2E8F0;
+  --ring: #10B981;
   --radius: 0.875rem;
 
-  --surface: #0C1020;
-  --surface2: #131823;
+  --surface: #FFFFFF;
+  --surface2: #F8FAFC;
 
-  /* Brand colors — slightly richer/deeper than before */
-  --accent-1: #2DFFA0;   /* mint green — primary */
-  --accent-2: #7C5CFC;   /* electric violet */
-  --accent-3: #FF5C5C;   /* coral red */
-  --accent-4: #FFC947;   /* warm amber */
+  --accent-1: #10B981;
+  --accent-2: #7C5CFC;
+  --accent-3: #EF4444;
+  --accent-4: #F59E0B;
 }
 
+/* Dark mode — uses the richer #2DFFA0 mint palette from main */
 .dark {
   --background: #060A12;
   --foreground: #ECF0FB;
@@ -107,6 +109,9 @@
   --input: #1A2235;
   --ring: #2DFFA0;
 
+  --surface: #0C1020;
+  --surface2: #131823;
+
   --accent-1: #2DFFA0;
   --accent-2: #7C5CFC;
   --accent-3: #FF5C5C;
@@ -114,6 +119,24 @@
 }
 
 @layer base {
+  :root {
+    /* ── Spacing Tokens ── */
+    --container-max-width: 1400px;
+    --container-padding: 32px;
+    --section-gap: 48px;
+    --component-gap: 24px;
+    --card-padding: 24px;
+    --radius-standard: 16px;
+
+    /* ── Typography Scale ── */
+    --font-size-h1: clamp(32px, 5vw, 40px);
+    --font-size-h2: clamp(24px, 4vw, 32px);
+    --font-size-h3: clamp(18px, 3vw, 22px);
+    --font-size-body: 15px;
+    --font-size-sm: 13px;
+    --font-size-xs: 11px;
+  }
+
   * {
     @apply border-border;
     box-sizing: border-box;
@@ -128,39 +151,57 @@
   }
 
   body {
-    font-family: 'Inter', system-ui, sans-serif;
-    font-size: 15px;
-    line-height: 1.65;
+    font-family: var(--font-body), system-ui, sans-serif;
+    font-size: var(--font-size-body);
+    line-height: 1.6;
     letter-spacing: -0.01em;
     @apply bg-background text-foreground;
     overflow-x: hidden;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Space Grotesk', system-ui, sans-serif;
-    font-weight: 700;
+  h1 {
+    font-family: var(--font-heading), system-ui, sans-serif;
+    font-size: var(--font-size-h1);
+    font-weight: 800;
     letter-spacing: -0.03em;
     line-height: 1.1;
   }
 
+  h2 {
+    font-family: var(--font-heading), system-ui, sans-serif;
+    font-size: var(--font-size-h2);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  h3 {
+    font-family: var(--font-heading), system-ui, sans-serif;
+    font-size: var(--font-size-h3);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+  }
+
   p {
     line-height: 1.7;
+    color: var(--muted-foreground);
   }
 
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #1A2235; border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: #2DFFA0; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
 
   :focus-visible {
-    outline: 2px solid rgba(45, 255, 160, 0.6);
+    outline: 2px solid color-mix(in srgb, var(--primary) 60%, transparent);
     outline-offset: 3px;
     border-radius: 4px;
   }
 
   ::selection {
-    background: rgba(45, 255, 160, 0.25);
-    color: #ECF0FB;
+    background: color-mix(in srgb, var(--primary) 25%, transparent);
+    color: inherit;
   }
 }
 

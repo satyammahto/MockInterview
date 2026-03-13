@@ -4,10 +4,11 @@ import { useState } from "react";
 
 interface TranscriptPanelProps {
   transcript: string;
+  interimTranscript?: string;
   isProcessing?: boolean;
 }
 
-export function TranscriptPanel({ transcript, isProcessing = false }: TranscriptPanelProps) {
+export function TranscriptPanel({ transcript, interimTranscript = "", isProcessing = false }: TranscriptPanelProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
 
@@ -16,7 +17,7 @@ export function TranscriptPanel({ transcript, isProcessing = false }: Transcript
     if (containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
-  }, [transcript, isProcessing]);
+  }, [transcript, interimTranscript, isProcessing]);
 
   const copyToClipboard = () => {
     if (!transcript) return;
@@ -54,6 +55,11 @@ export function TranscriptPanel({ transcript, isProcessing = false }: Transcript
         
         <p className="text-foreground/90 whitespace-pre-wrap">
           {transcript}
+          {interimTranscript && (
+            <span className="text-muted-foreground/50 italic transition-opacity">
+              {" "}{interimTranscript}
+            </span>
+          )}
         </p>
 
         {isProcessing && (

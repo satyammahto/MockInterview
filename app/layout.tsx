@@ -3,7 +3,7 @@ import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import Navbar from '@/components/Navbar'
 import { Toaster } from "@/components/ui/toaster"
-import NavDots from '@/components/NavDots'
+import { SidebarProvider } from '@/components/SidebarContext'
 
 export const metadata: Metadata = {
   title: 'PrepSense — AI Mock Interview Platform',
@@ -22,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className="dark">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -30,13 +30,14 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="bg-background text-foreground min-h-screen flex flex-col pt-[68px] antialiased">
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
-          <Navbar />
-          <main className="flex-1 w-full">
-            {children}
-          </main>
-          <Toaster />
-          <NavDots />
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+          <SidebarProvider>
+            <Navbar />
+            <main className="flex-1 w-full">
+              {children}
+            </main>
+            <Toaster />
+          </SidebarProvider>
         </ThemeProvider>
       </body>
     </html>

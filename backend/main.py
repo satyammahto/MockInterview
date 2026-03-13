@@ -14,7 +14,11 @@ from fastapi.responses import JSONResponse
 
 from config import get_settings
 from database import Base, engine
+<<<<<<< HEAD
 from routers import sessions, questions, answers, transcribe, tts, report, dashboard, resume_router, resume, question_generator
+=======
+from routers import sessions, questions, answers, transcribe, tts, report, dashboard, resume_router, resume, voice_analysis, improve_resume
+>>>>>>> 43af45495dfc197909b53ff7992bfae07c08618d
 
 # ─── Logging ─────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -70,7 +74,12 @@ app.include_router(report.router)
 app.include_router(dashboard.router)
 app.include_router(resume_router.router)
 app.include_router(resume.router)
+<<<<<<< HEAD
 app.include_router(question_generator.router)
+=======
+app.include_router(voice_analysis.router)
+app.include_router(improve_resume.router)
+>>>>>>> 43af45495dfc197909b53ff7992bfae07c08618d
 
 
 # ─── Health Check ─────────────────────────────────────────────────────────────

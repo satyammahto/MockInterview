@@ -29,11 +29,29 @@ async def text_to_speech(body: TTSRequest):
     if len(body.text) > 1000:
         raise HTTPException(status_code=400, detail="Text is too long (max 1000 characters).")
 
+<<<<<<< HEAD
     text = body.text.strip()
 
     try:
         from services.coqui_tts import synthesize_speech
         audio_bytes = synthesize_speech(text)
+=======
+    try:
+        audio_bytes = synthesize_speech(body.text.strip())
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"[TTS] Synthesis error: {e}")
+        audio_bytes = b""
+
+    if not audio_bytes:
+        # Return 200 with an empty body + custom header so the frontend knows to
+        # fall back to window.speechSynthesis — never block interview flow.
+        return Response(
+            content=b"",
+            media_type="audio/wav",
+            headers={"X-TTS-Fallback": "true"},
+        )
+>>>>>>> 43af45495dfc197909b53ff7992bfae07c08618d
 
         if audio_bytes:
             return Response(content=audio_bytes, media_type="audio/wav")

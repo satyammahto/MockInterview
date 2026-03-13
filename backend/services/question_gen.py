@@ -114,62 +114,119 @@ def generate_questions(
     mode_key = interview_mode.lower() if interview_mode else "mixed"
     mode_instruction = MODE_INSTRUCTIONS.get(mode_key, MODE_INSTRUCTIONS["mixed"])
 
+<<<<<<< HEAD
     prompt = f"""You are an expert interviewer. Generate exactly {num_questions} interview questions for the following candidate.
+=======
+    def _build_prompt(n: int) -> str:
+        return f"""You are an expert technical interviewer. Generate exactly {n} interview questions for the following candidate.
+>>>>>>> 43af45495dfc197909b53ff7992bfae07c08618d
 
 Candidate Skills: {skill_str}
 Target Role: {role or 'Software Engineer'}
 Job Description: {job_description[:2000]}
 Difficulty: {difficulty}
 
+<<<<<<< HEAD
 INTERVIEW MODE: {mode_key.upper()}
 
 {mode_instruction}
 
 Additional requirements:
 - Tailor questions to the candidate's specific skills AND the JD requirements
+=======
+Requirements:
+- Mix types: Technical (deep tech knowledge), Behavioral (STAR format), and Deep Dive (system design or architecture)
+- Tailor questions to the candidate's actual skills AND the JD requirements
+- Reference specific technologies from the candidate's skill set when possible
+>>>>>>> 43af45495dfc197909b53ff7992bfae07c08618d
 - Each question must be clear and concise (1-2 sentences)
 - {difficulty.capitalize()} difficulty level
 - Generate exactly {num_questions} questions
 
-IMPORTANT: Respond with ONLY a raw JSON array. Do not add any explanation before or after. Do not use markdown.
+IMPORTANT: You MUST return EXACTLY {n} questions. Respond with ONLY a raw JSON array. No markdown, no explanation.
 [
   {{"text": "question text here", "type": "Technical"}},
   {{"text": "question text here", "type": "Behavioral"}}
 ]"""
 
+    def _call_groq(prompt: str) -> Optional[list]:
+        try:
+            response = _get_client().chat.completions.create(
+                model=settings.GROQ_MODEL,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.6,
+                max_tokens=2000,
+            )
+            content = response.choices[0].message.content
+            logger.debug(f"[QuestionGen] Raw response: {content[:300]}")
+            return _extract_json_array(content)
+        except RuntimeError:
+            raise
+        except Exception as e:
+            logger.error(f"[QuestionGen] Groq call error: {e}")
+            return None
+
     try:
+<<<<<<< HEAD
         response = _get_client().chat.completions.create(
             model=settings.GROQ_MODEL,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.6,
             max_tokens=2000,
         )
+=======
+        # First attempt
+        questions = _call_groq(_build_prompt(num_questions))
+>>>>>>> 43af45495dfc197909b53ff7992bfae07c08618d
 
-        content = response.choices[0].message.content
-        logger.debug(f"[QuestionGen] Raw response: {content[:300]}")
-
-        questions = _extract_json_array(content)
+        if not questions:
+            logger.warning("[QuestionGen] First attempt returned no parseable JSON. Retrying once.")
+            questions = _call_groq(_build_prompt(num_questions))
 
         if not questions:
             logger.warning("[QuestionGen] Could not parse JSON from LLM response. Using fallback.")
             return _fallback_questions(num_questions, skills, mode_key)
 
-        # Validate and sanitize
+        # Validate and sanitise
         validated = []
-        for q in questions[:num_questions]:
+        for q in questions:
             if isinstance(q, dict) and q.get("text"):
                 validated.append({
                     "text": str(q["text"]).strip(),
                     "type": str(q.get("type", "Technical")).strip(),
                 })
 
+<<<<<<< HEAD
         return validated if validated else _fallback_questions(num_questions, skills, mode_key)
+=======
+        # If still short, retry once for the missing count
+        if validated and len(validated) < num_questions:
+            logger.warning(
+                f"[QuestionGen] Got {len(validated)}/{num_questions} questions. Retrying for remainder."
+            )
+            extra = _call_groq(_build_prompt(num_questions - len(validated)))
+            if extra:
+                for q in extra:
+                    if isinstance(q, dict) and q.get("text") and len(validated) < num_questions:
+                        validated.append({
+                            "text": str(q["text"]).strip(),
+                            "type": str(q.get("type", "Technical")).strip(),
+                        })
+
+        # Pad with fallback questions if still short
+        if len(validated) < num_questions:
+            fallback = _fallback_questions(num_questions - len(validated), skills)
+            validated.extend(fallback)
+
+        return validated[:num_questions] if validated else _fallback_questions(num_questions, skills)
+>>>>>>> 43af45495dfc197909b53ff7992bfae07c08618d
 
     except RuntimeError:
         raise  # Re-raise config errors
     except Exception as e:
         logger.error(f"[QuestionGen] Error: {e}")
         return _fallback_questions(num_questions, skills, mode_key)
+
 
 
 def generate_followup_question(
