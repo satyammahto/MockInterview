@@ -4,7 +4,8 @@ import { Home, Mic, FileText, BarChart2, Settings } from "lucide-react"
 export function Sidebar() {
     const navItems = [
         { icon: Home, label: "Dashboard", href: "/dashboard" },
-        { icon: FileText, label: "New Interview", href: "/upload" },
+        { icon: Mic, label: "New Interview", href: "/upload" },
+        { icon: FileText, label: "Resume Analyzer", href: "/resume-analyzer" },
         { icon: BarChart2, label: "Reports", href: "/report" },
         { icon: Settings, label: "Settings", href: "/settings" },
     ]
