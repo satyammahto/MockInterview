@@ -46,13 +46,14 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
 
-  --font-heading: 'Syne', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
+  /* Premium font pair: Space Grotesk (headings) + Inter (body) */
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
 }
 
 @plugin "tailwindcss-animate";
 
-/* ── Design Tokens (Prototype Palette) ── */
+/* ── Design Tokens ── */
 :root {
   --background: #E8EDF5;
   --foreground: #080B14;
@@ -60,55 +61,56 @@
   --card-foreground: #080B14;
   --popover: #FFFFFF;
   --popover-foreground: #080B14;
-  --primary: #4EFFA3;
-  --primary-foreground: #080B14;
-  --secondary: #0E1220;
+  --primary: #2DFFA0;
+  --primary-foreground: #060A12;
+  --secondary: #0C1020;
   --secondary-foreground: #E8EDF5;
-  --muted: #141926;
-  --muted-foreground: #8892A4;
-  --accent: #4EFFA3;
-  --accent-foreground: #080B14;
-  --destructive: #FF6B6B;
+  --muted: #131823;
+  --muted-foreground: #7A8499;
+  --accent: #2DFFA0;
+  --accent-foreground: #060A12;
+  --destructive: #FF5C5C;
   --destructive-foreground: #FFFFFF;
-  --border: #1E2535;
-  --input: #1E2535;
-  --ring: #4EFFA3;
-  --radius: 0.75rem;
+  --border: #1A2235;
+  --input: #1A2235;
+  --ring: #2DFFA0;
+  --radius: 0.875rem;
 
-  --surface: #0E1220;
-  --surface2: #141926;
+  --surface: #0C1020;
+  --surface2: #131823;
 
-  --accent-1: #4EFFA3;
-  --accent-2: #7B61FF;
-  --accent-3: #FF6B6B;
-  --accent-4: #FFD166;
+  /* Brand colors — slightly richer/deeper than before */
+  --accent-1: #2DFFA0;   /* mint green — primary */
+  --accent-2: #7C5CFC;   /* electric violet */
+  --accent-3: #FF5C5C;   /* coral red */
+  --accent-4: #FFC947;   /* warm amber */
 }
 
 .dark {
-  --background: #080B14;
-  --foreground: #E8EDF5;
-  --card: #111827;
-  --card-foreground: #E8EDF5;
-  --popover: #0E1220;
-  --popover-foreground: #E8EDF5;
-  --primary: #4EFFA3;
-  --primary-foreground: #080B14;
-  --secondary: #0E1220;
-  --secondary-foreground: #E8EDF5;
-  --muted: #141926;
-  --muted-foreground: #8892A4;
-  --accent: #4EFFA3;
-  --accent-foreground: #080B14;
-  --destructive: #FF6B6B;
+  --background: #060A12;
+  --foreground: #ECF0FB;
+  --card: #0E1522;
+  --card-foreground: #ECF0FB;
+  --popover: #0C1020;
+  --popover-foreground: #ECF0FB;
+  --primary: #2DFFA0;
+  --primary-foreground: #060A12;
+  --secondary: #0C1020;
+  --secondary-foreground: #ECF0FB;
+  --muted: #131823;
+  --muted-foreground: #7A8499;
+  --accent: #2DFFA0;
+  --accent-foreground: #060A12;
+  --destructive: #FF5C5C;
   --destructive-foreground: #FFFFFF;
-  --border: #1E2535;
-  --input: #1E2535;
-  --ring: #4EFFA3;
+  --border: #1A2235;
+  --input: #1A2235;
+  --ring: #2DFFA0;
 
-  --accent-1: #4EFFA3;
-  --accent-2: #7B61FF;
-  --accent-3: #FF6B6B;
-  --accent-4: #FFD166;
+  --accent-1: #2DFFA0;
+  --accent-2: #7C5CFC;
+  --accent-3: #FF5C5C;
+  --accent-4: #FFC947;
 }
 
 @layer base {
@@ -122,26 +124,43 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
   }
 
   body {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+    letter-spacing: -0.01em;
     @apply bg-background text-foreground;
     overflow-x: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Syne', sans-serif;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
   }
 
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  p {
+    line-height: 1.7;
+  }
+
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #1E2535; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb { background: #1A2235; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #2DFFA0; }
 
   :focus-visible {
-    outline: 2px solid rgba(78, 255, 163, 0.6);
-    outline-offset: 2px;
+    outline: 2px solid rgba(45, 255, 160, 0.6);
+    outline-offset: 3px;
     border-radius: 4px;
+  }
+
+  ::selection {
+    background: rgba(45, 255, 160, 0.25);
+    color: #ECF0FB;
   }
 }
 
@@ -162,14 +181,19 @@
 }
 
 @keyframes micPulse {
-  0% { box-shadow: 0 0 0 0 rgba(78, 255, 163, 0.4); }
-  70% { box-shadow: 0 0 0 20px rgba(78, 255, 163, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(78, 255, 163, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(45, 255, 160, 0.4); }
+  70% { box-shadow: 0 0 0 22px rgba(45, 255, 160, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(45, 255, 160, 0); }
 }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(24px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
 }
 
 /* ── Utility Classes ── */
@@ -179,9 +203,43 @@
 .animate-mic-pulse { animation: micPulse 1.5s infinite; }
 .animate-fade-up { animation: fadeUp 0.5s ease forwards; }
 
-.font-heading { font-family: 'Syne', sans-serif; }
-.font-body { font-family: 'DM Sans', sans-serif; }
+.font-heading { font-family: 'Space Grotesk', system-ui, sans-serif; }
+.font-body { font-family: 'Inter', system-ui, sans-serif; }
 
-/* Surface utilities matching prototype */
-.surface { background: #0E1220; }
-.surface2 { background: #141926; }
+/* ── Surface utilities ── */
+.surface { background: #0C1020; }
+.surface2 { background: #131823; }
+
+/* ── Gradient text ── */
+.gradient-text {
+  background: linear-gradient(135deg, #2DFFA0 0%, #7C5CFC 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Glow effects ── */
+.glow-green {
+  box-shadow: 0 0 24px rgba(45, 255, 160, 0.3), 0 0 60px rgba(45, 255, 160, 0.1);
+}
+.glow-violet {
+  box-shadow: 0 0 24px rgba(124, 92, 252, 0.3), 0 0 60px rgba(124, 92, 252, 0.1);
+}
+
+/* ── Card hover effect ── */
+.card-hover {
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.card-hover:hover {
+  border-color: rgba(45, 255, 160, 0.25) !important;
+  box-shadow: 0 8px 32px rgba(45, 255, 160, 0.08);
+  transform: translateY(-2px);
+}
+
+/* ── Skeleton loader ── */
+.skeleton {
+  background: linear-gradient(90deg, #131823 25%, #1A2235 50%, #131823 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 8px;
+}

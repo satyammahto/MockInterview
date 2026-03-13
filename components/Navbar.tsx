@@ -9,7 +9,6 @@ const navLinks = [
     { name: "Start Mock", href: "/upload" },
     { name: "Interview", href: "/interview" },
     { name: "Report", href: "/report" },
-    { name: "Architecture", href: "/architecture" },
 ]
 
 export default function Navbar() {

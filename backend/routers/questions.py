@@ -10,6 +10,9 @@ from models.question import Question
 router = APIRouter(prefix="/sessions", tags=["Questions"])
 
 
+
+
+
 @router.get("/{session_id}/questions")
 def get_questions(session_id: str, db: Session = Depends(get_db)):
     """
