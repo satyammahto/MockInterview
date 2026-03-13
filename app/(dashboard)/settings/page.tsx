@@ -1,7 +1,7 @@
 "use client"
 
 import { useTheme } from "next-themes"
-import { Monitor, Moon, Sun, User, Bell, Shield } from "lucide-react"
+import { Monitor, Moon, Sun, User, Bell, Shield, LogOut } from "lucide-react"
 
 export default function SettingsPage() {
     const { theme, setTheme } = useTheme()
