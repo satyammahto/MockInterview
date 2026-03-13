@@ -189,6 +189,11 @@ IMPORTANT: Respond with ONLY a raw JSON object. No markdown, no explanation.
   "strengths": ["<key strength 1>", "<key strength 2>", "<key strength 3>"],
   "improvements": ["<area to improve 1>", "<area to improve 2>", "<area to improve 3>"],
   "advice": ["<actionable advice 1>", "<actionable advice 2>", "<actionable advice 3>"],
+  "prep_tips": ["<personalized interview prep tip 1>", "<personalized interview prep tip 2>"],
+  "learning_resources": [
+    {"title": "<resource title>", "url": "<resource url>"},
+    {"title": "<resource title>", "url": "<resource url>"}
+  ],
   "summary_message": "<2-3 sentence motivational summary of the candidate's overall performance>"
 }}"""
 
@@ -223,5 +228,7 @@ IMPORTANT: Respond with ONLY a raw JSON object. No markdown, no explanation.
         "strengths": ["Engaged with all questions", "Showed effort in responses"],
         "improvements": ["Continue practicing with more sessions", "Focus on structuring answers clearly"],
         "advice": ["Review your answers and study the ideal responses", "Practice the STAR method for behavioral questions"],
+        "prep_tips": ["Standardize your technical explanations", "Focus on impact-driven results"],
+        "learning_resources": [{"title": "Cracking the Coding Interview", "url": "https://www.careercup.com/book"}],
         "summary_message": "Good effort! Keep practicing to improve your interview performance. Review the ideal answers to strengthen your responses."
     }
