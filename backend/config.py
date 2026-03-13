@@ -8,6 +8,8 @@ class Settings:
     DATABASE_URL: str
     GROQ_API_KEY: str
     GROQ_MODEL: str
+    GEMINI_API_KEY: str
+    GEMINI_MODEL: str
     WHISPER_MODEL: str
     TTS_MODEL: str
     TTS_USE_GPU: bool
@@ -22,6 +24,8 @@ def get_settings() -> Settings:
         DATABASE_URL=config("DATABASE_URL"),
         GROQ_API_KEY=config("GROQ_API_KEY", default=""),
         GROQ_MODEL=config("GROQ_MODEL", default="llama3-8b-8192"),
+        GEMINI_API_KEY=config("GEMINI_API_KEY", default=""),
+        GEMINI_MODEL=config("GEMINI_MODEL", default="gemini-1.5-pro"),
         WHISPER_MODEL=config("WHISPER_MODEL", default="base"),
         TTS_MODEL=config("TTS_MODEL", default="tts_models/en/ljspeech/tacotron2-DDC"),
         TTS_USE_GPU=config("TTS_USE_GPU", default=False, cast=bool),
