@@ -13,6 +13,12 @@ class FeedbackReport(Base):
     clarity_score = Column(Float, nullable=True)
     relevance_score = Column(Float, nullable=True)
     pacing_score = Column(Float, nullable=True)
+    technical_score = Column(Float, nullable=True)     # 0-10 or 0-100
+    grammar_score = Column(Float, nullable=True)
+    communication_score = Column(Float, nullable=True)
+    feedback_summary = Column(Text, nullable=True)
+    prep_tips = Column(JSON, nullable=True)
+    learning_resources = Column(JSON, nullable=True)
     strengths = Column(JSON, nullable=True)     # ["Strong technical depth", ...]
     improvements = Column(JSON, nullable=True)  # ["Use STAR method", ...]
     advice = Column(JSON, nullable=True)        # ["Practice quantifying results", ...]

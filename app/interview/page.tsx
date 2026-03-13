@@ -14,6 +14,7 @@ import { VoiceRecorder } from "@/components/interview/VoiceRecorder"
 import { AIAvatar } from "@/components/interview/AIAvatar"
 import { TranscriptPanel } from "@/components/interview/TranscriptPanel"
 import { CoachingPrompt } from "@/components/interview/CoachingPrompt"
+import { AnswerEvaluationCard } from "@/components/interview/AnswerEvaluationCard"
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 
@@ -24,6 +25,8 @@ export default function InterviewPage() {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [followup, setFollowup] = useState("")
     const [error, setError] = useState("")
+    const [evaluation, setEvaluation] = useState<any>(null)
+    const [isEvaluating, setIsEvaluating] = useState(false)
 
     // Global state
     const { 
@@ -103,13 +106,49 @@ export default function InterviewPage() {
         return () => clearInterval(timer)
     }, [isRecording, timeRemaining])
 
+    const triggerEvaluation = async (text: string) => {
+        if (!text || text.length < 20 || !sessionId) return;
+        
+        setIsEvaluating(true);
+        setEvaluation(null);
+        
+        try {
+            const res = await fetch(`${API_BASE}/sessions/evaluate-answer`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    session_id: sessionId,
+                    question: currentQ.text,
+                    user_answer: text,
+                    interview_mode: "mixed", // Static for now or load from session
+                    role: "Software Engineer",
+                }),
+            });
+            
+            if (res.ok) {
+                const data = await res.json();
+                setEvaluation(data);
+            }
+        } catch (err) {
+            console.error("Evaluation failed:", err);
+        } finally {
+            setIsEvaluating(false);
+        }
+    };
+
     const handleMicToggle = async () => {
         if (isRecording) {
             stopRecording()
             stopListening()
+            
+            // Trigger evaluation slightly after stopping to ensure transcript is stable
+            setTimeout(() => {
+                if (transcript) triggerEvaluation(transcript);
+            }, 500);
         } else {
             // Stop any TTS first
             stop()
+            setEvaluation(null)
             resetTranscript()
             setError("")
             await startRecording()
@@ -157,6 +196,7 @@ export default function InterviewPage() {
             } else {
                 setCurrentQuestion(currentQuestionIndex + 1)
                 resetTranscript()
+                setEvaluation(null)
                 setFollowup("")
                 setTimeRemaining(90)
                 if (isRecording) stopRecording()
@@ -251,6 +291,16 @@ export default function InterviewPage() {
                                 )}
                             </div>
                         </div>
+
+                        {/* LIVE FEEDBACK CARD */}
+                        {(isEvaluating || evaluation) && (
+                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                <AnswerEvaluationCard 
+                                    evaluation={evaluation} 
+                                    loading={isEvaluating} 
+                                />
+                            </div>
+                        )}
 
                         {/* Controls Bar */}
                         <div className="bg-card border border-border rounded-2xl p-6 flex items-center justify-between shadow-sm">

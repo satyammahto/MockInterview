@@ -16,11 +16,16 @@ interface ReportData {
         confidence: number
         relevance: number
         pacing: number
+        technical: number
+        grammar: number
+        communication: number
     }
     feedback: AnswerData[]
     strengths: string[]
     improvements: string[]
     advice: string[]
+    prep_tips: string[]
+    learning_resources: { title: string; url: string }[]
     summary_message: string
     // Confidence Analysis (Feature 2)
     confidence_analysis?: {
@@ -133,8 +138,10 @@ export default function ReportPage() {
     const scoreMetrics = [
         { label: "Clarity", val: clarity, colorClass: "text-primary", barClass: "bg-primary", pct: clarity },
         { label: "Confidence", val: confidence, colorClass: "text-accent-4", barClass: "bg-accent-4", pct: confidence },
+        { label: "Technical", val: report?.metrics?.technical ?? 75, colorClass: "text-primary", barClass: "bg-primary", pct: report?.metrics?.technical ?? 75 },
+        { label: "Grammar", val: report?.metrics?.grammar ?? 80, colorClass: "text-accent-4", barClass: "bg-accent-4", pct: report?.metrics?.grammar ?? 80 },
         { label: "Relevance", val: relevance, colorClass: "text-primary", barClass: "bg-primary", pct: relevance },
-        { label: "Depth", val: depth, colorClass: "text-destructive", barClass: "bg-destructive", pct: depth },
+        { label: "Communication", val: report?.metrics?.communication ?? 82, colorClass: "text-accent-2", barClass: "bg-accent-2", pct: report?.metrics?.communication ?? 82 },
     ]
 
     const voiceStats = [
@@ -194,7 +201,7 @@ export default function ReportPage() {
             </div>
 
                 {/* ── Score Cards ── */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-12">
                     {scoreMetrics.map((s) => (
                         <div key={s.label} className="rounded-[16px] p-6 transition-all duration-200 bg-card border border-border hover:border-primary/30 hover:-translate-y-0.5 shadow-sm">
                             <div className="text-[12px] font-semibold uppercase tracking-[1px] mb-2 text-muted-foreground">{s.label}</div>
@@ -324,23 +331,38 @@ export default function ReportPage() {
 
                 {/* ── Tips ── */}
                 <div className="rounded-[24px] p-9 mb-12 bg-card border border-border shadow-sm">
-                    <h2 className="font-heading text-[24px] font-extrabold mb-6">Personal Coaching Tips</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {tipCards.map((tip) => {
-                            const text = tip.key === "strengths"
-                                ? (report?.strengths?.[0] ?? "Technical depth is excellent. You explain complex concepts clearly.")
-                                : tip.key === "improvements"
-                                ? (report?.improvements?.[0] ?? "Reduce filler words. Record yourself for 2 minutes daily — awareness alone reduces them 60%.")
-                                : tip.custom
-                            return (
-                                <div key={tip.title} className={cn("rounded-[16px] p-5 border", tipClass(tip.type))}>
-                                    <div className="text-[28px] mb-3">{tip.icon}</div>
-                                    <h4 className="font-heading text-[15px] font-bold mb-1.5">{tip.title}</h4>
-                                    <p className="text-[13px] leading-[1.6] text-muted-foreground">{text}</p>
+                    <h2 className="font-heading text-[24px] font-extrabold mb-6">Personalized Preparation Tips</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                        {(report?.prep_tips ?? []).map((tip, i) => (
+                            <div key={i} className="flex items-start gap-4 p-5 rounded-2xl bg-primary/5 border border-primary/10">
+                                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary shrink-0 font-bold">
+                                    {i + 1}
                                 </div>
-                            )
-                        })}
+                                <p className="text-sm leading-relaxed text-muted-foreground">{tip}</p>
+                            </div>
+                        ))}
                     </div>
+
+                    {report?.learning_resources && report.learning_resources.length > 0 && (
+                        <>
+                            <h3 className="text-sm font-bold uppercase tracking-widest opacity-60 mb-4">Recommended Resources</h3>
+                            <div className="flex flex-wrap gap-3">
+                                {report.learning_resources.map((res, i) => (
+                                    <a 
+                                        key={i} 
+                                        href={res.url} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-muted border border-border hover:border-primary/30 transition-all text-xs font-bold"
+                                    >
+                                        <FileText className="w-3.5 h-3.5 text-primary" />
+                                        {res.title}
+                                        <ChevronRight className="w-3 h-3 opacity-40" />
+                                    </a>
+                                ))}
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 {/* ── Actions ── */}

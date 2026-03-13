@@ -12,6 +12,9 @@ from models.question import Question, Answer
 from models.report import FeedbackReport
 from services.feedback_gen import evaluate_answer, generate_overall_feedback
 from services.confidence_analyzer import analyze_confidence, aggregate_confidence
+from services.answer_evaluator import evaluate_answer_v2
+from pydantic import BaseModel
+from typing import List, Optional
 
 router = APIRouter(prefix="/sessions", tags=["Report"])
 
@@ -136,6 +139,13 @@ def generate_report(session_id: str, db: Session = Depends(get_db)):
     report.improvements = overall.get("improvements", [])
     report.advice = overall.get("advice", [])
     report.summary_message = overall.get("summary_message", "")
+    report.prep_tips = overall.get("prep_tips", [])
+    report.learning_resources = overall.get("learning_resources", [])
+    
+    # Granular scores
+    report.technical_score = overall.get("technical_score", overall.get("overall_score", 0))
+    report.grammar_score = overall.get("grammar_score", 70)
+    report.communication_score = overall.get("communication_score", 70)
 
     # Confidence detection fields
     report.filler_word_count = agg_confidence["total_filler_count"]
@@ -155,6 +165,31 @@ def generate_report(session_id: str, db: Session = Depends(get_db)):
     db.commit()
 
     return _build_report_response(overall, feedback_items, agg_confidence, avg_star_score, star_analyses)
+
+
+class EvaluationRequest(BaseModel):
+    session_id: str
+    question: str
+    user_answer: str
+    interview_mode: Optional[str] = "mixed"
+    role: Optional[str] = "Software Engineer"
+
+
+@router.post("/evaluate-answer")
+async def api_evaluate_answer(req: EvaluationRequest):
+    """
+    Real-time answer evaluation during an interview session.
+    """
+    try:
+        result = evaluate_answer_v2(
+            question=req.question,
+            user_answer=req.user_answer,
+            interview_mode=req.interview_mode,
+            role=req.role
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/{session_id}/report")
@@ -205,6 +240,8 @@ def get_report(session_id: str, db: Session = Depends(get_db)):
         "strengths": report.strengths,
         "improvements": report.improvements,
         "advice": report.advice,
+        "prep_tips": report.prep_tips,
+        "learning_resources": report.learning_resources,
         "summary_message": report.summary_message or "Review your answers and the ideal responses to keep improving.",
     }
 
@@ -236,11 +273,16 @@ def _build_report_response(
             "clarity": overall.get("clarity_score", 70),
             "relevance": overall.get("relevance_score", 70),
             "pacing": overall.get("pacing_score", 70),
+            "technical": overall.get("technical_score", 70),
+            "grammar": overall.get("grammar_score", 70),
+            "communication": overall.get("communication_score", 70),
         },
         "feedback": feedback_items,
         "strengths": overall.get("strengths", []),
         "improvements": overall.get("improvements", []),
         "advice": overall.get("advice", []),
+        "prep_tips": overall.get("prep_tips", []),
+        "learning_resources": overall.get("learning_resources", []),
         "summary_message": overall.get("summary_message", ""),
 
         # Confidence Detection (Feature 2)
