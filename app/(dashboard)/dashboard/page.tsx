@@ -44,8 +44,8 @@ export default function DashboardPage() {
             if (!res.ok) throw new Error("Failed to load dashboard stats.")
             const json: DashboardData = await res.json()
             setData(json)
-        } catch (err: any) {
-            setError(err.message || "Could not load dashboard.")
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : "Could not load dashboard.")
         } finally {
             setIsLoading(false)
         }

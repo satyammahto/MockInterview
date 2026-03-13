@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Mic, ChartBar, FileText, BrainCircuit, Activity, Code2 } from "lucide-react"
+import { ArrowRight, Mic, FileText, BrainCircuit, Activity, Code2 } from "lucide-react"
 
 export default function LandingPage() {
   return (

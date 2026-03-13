@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import Navbar from '@/components/Navbar'
+import { Toaster } from "@/components/ui/toaster"
 
 // Load fonts from Google Fonts directly in the layout
 export const metadata: Metadata = {
@@ -27,6 +28,7 @@ export default function RootLayout({
           <main className="flex-1 block h-full w-full">
             {children}
           </main>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>
