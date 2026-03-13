@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { PageContainer } from "@/components/layout/PageContainer"
+import { SectionHeader } from "@/components/layout/SectionHeader"
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 
@@ -85,8 +87,8 @@ export default function ReportPage() {
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen gap-4 bg-background">
-                <Loader2 className="w-10 h-10 animate-spin text-primary" />
+            <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
                 <p className="font-heading text-lg font-bold text-muted-foreground">Generating your report...</p>
             </div>
         )
@@ -115,50 +117,49 @@ export default function ReportPage() {
     ]
 
     return (
-        <div className="w-full pb-24 bg-background text-foreground">
-            <div className="max-w-[1000px] mx-auto px-6 pt-16">
-
-                {/* ── Header ── */}
-                <div className="flex justify-between items-start mb-12 flex-wrap gap-6">
-                    <div>
-                        <div className="text-[13px] font-semibold uppercase tracking-[1px] mb-2 text-muted-foreground">Interview Complete</div>
-                        <h1 className="font-heading text-[40px] font-extrabold tracking-[-1px] mb-2">Your Report Card</h1>
-                        <p className="text-muted-foreground">Software Engineer · Mixed · {report?.answers?.length ?? 10} Questions</p>
-                        <div className="flex gap-2 flex-wrap mt-4">
-                            {[
-                                { label: "Friendly Senior Mode", className: "bg-primary/10 text-primary" },
-                                { label: "Medium Difficulty", className: "bg-accent-2/10 text-accent-2" },
-                                { label: "Fresher", className: "bg-accent-4/10 text-accent-4" },
-                            ].map((b) => (
-                                <span key={b.label} className={cn("px-2.5 py-1 rounded-[6px] text-[11px] font-bold uppercase tracking-[0.5px]", b.className)}>{b.label}</span>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-8">
-                        {/* Score Ring */}
-                        <div className="flex flex-col items-center gap-2">
-                            <div
-                                className="w-[130px] h-[130px] rounded-full flex items-center justify-center"
-                                style={{ background: `conic-gradient(var(--primary) 0% ${overall}%, var(--border) ${overall}% 100%)` }}
-                            >
-                                <div className="w-[100px] h-[100px] rounded-full flex flex-col items-center justify-center bg-background">
-                                    <div className="font-heading text-[32px] font-extrabold leading-none">{overall}</div>
-                                    <div className="text-[11px] font-semibold tracking-[1px] mt-0.5 text-muted-foreground">/100</div>
-                                </div>
-                            </div>
-                            <div className="text-[13px] font-semibold text-muted-foreground">Overall Score</div>
-                        </div>
-
-                        {/* CTA */}
-                        <div className="flex flex-col gap-2">
-                            <button className="flex items-center gap-2 px-5 py-3 rounded-xl font-heading font-bold text-sm bg-primary text-primary-foreground hover:opacity-90 transition-opacity">
-                                ⬇ Download PDF Report
-                            </button>
-                            <button onClick={() => router.push("/upload")} className="text-[12px] text-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors">🔄 Try Again</button>
-                        </div>
+        <PageContainer>
+            <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-[var(--section-gap)]">
+                <div className="flex-1">
+                    <SectionHeader 
+                        title="Your Report Card" 
+                        description={`Software Engineer · Mixed · ${report?.answers?.length ?? 10} Questions`}
+                        className="mb-6"
+                    />
+                    <div className="flex gap-2 flex-wrap -mt-4">
+                        {[
+                            { label: "Friendly Senior Mode", className: "bg-primary/10 text-primary" },
+                            { label: "Medium Difficulty", className: "bg-accent-2/10 text-accent-2" },
+                            { label: "Fresher", className: "bg-accent-4/10 text-accent-4" },
+                        ].map((b) => (
+                            <span key={b.label} className={cn("px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider", b.className)}>{b.label}</span>
+                        ))}
                     </div>
                 </div>
+
+                <div className="flex items-center gap-8 bg-card border border-border p-6 rounded-2xl shadow-sm self-stretch md:self-auto">
+                    <div className="flex flex-col items-center gap-2">
+                        <div
+                            className="w-[100px] h-[100px] rounded-full flex items-center justify-center p-1.5"
+                            style={{ background: `conic-gradient(var(--primary) 0% ${overall}%, var(--border) ${overall}% 100%)` }}
+                        >
+                            <div className="w-full h-full rounded-full flex flex-col items-center justify-center bg-card">
+                                <span className="font-heading text-2xl font-black">{overall}</span>
+                                <span className="text-[10px] font-bold text-muted-foreground">/100</span>
+                            </div>
+                        </div>
+                        <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Overall Score</span>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <button className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-heading font-bold text-sm bg-primary text-primary-foreground hover:scale-[1.02] transition-all">
+                            Download PDF
+                        </button>
+                        <button onClick={() => router.push("/upload")} className="text-[11px] font-bold text-muted-foreground hover:text-foreground transition-colors">
+                            🔄 Retake Interview
+                        </button>
+                    </div>
+                </div>
+            </div>
 
                 {/* ── Score Cards ── */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
@@ -262,8 +263,7 @@ export default function ReportPage() {
                         📤 Share Score Card
                     </button>
                 </div>
-            </div>
-        </div>
+        </PageContainer>
     )
 }
 

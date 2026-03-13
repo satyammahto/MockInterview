@@ -4,6 +4,8 @@ import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowRight, Loader2, CheckCircle2, FileText } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { PageContainer } from "@/components/layout/PageContainer"
+import { SectionHeader } from "@/components/layout/SectionHeader"
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 
@@ -19,6 +21,7 @@ const difficulties = [
 
 export default function UploadPage() {
     const router = useRouter()
+    const fileInputRef = useRef<HTMLInputElement>(null)
     const [file, setFile] = useState<File | null>(null)
     const [jobDescription, setJobDescription] = useState("")
     const [skills, setSkills] = useState("")
@@ -102,197 +105,145 @@ export default function UploadPage() {
     )
 
     return (
-        <div className="w-full min-h-screen pb-24 bg-background text-foreground">
-            <div className="max-w-[780px] mx-auto px-6 pt-16">
+        <PageContainer maxWidth="narrow" className="py-8">
+            <SectionHeader 
+                title="Prepare Your Interview" 
+                description="Upload your resume or enter your skills to get tailored interview questions and real-time feedback."
+                align="center"
+                className="mb-12"
+            />
 
-                {/* Header */}
-                <div className="mb-12">
-                    <h1 className="font-heading text-[36px] font-extrabold tracking-[-1px] mb-2">
-                        Set up your mock interview
-                    </h1>
-                    <p style={{ color: '#8892A4' }}>Takes 2 minutes. The more detail you give, the better the questions.</p>
-                </div>
-
-                {/* Step Indicator */}
-                <div className="flex items-center gap-0 mb-10">
-                    {[
-                        { num: "✓", label: "Resume", state: "done" },
-                        { num: "2", label: "Role & Preferences", state: "active" },
-                        { num: "3", label: "Interview Style", state: "idle" },
-                        { num: "4", label: "Go Live", state: "idle" },
-                    ].map((step, i) => (
-                        <div key={i} className="flex items-center gap-0 flex-1">
-                            <div className="flex items-center gap-2.5">
-                                <div
-                                    className="w-9 h-9 rounded-full flex items-center justify-center font-heading text-sm font-bold border-2 transition-all duration-300"
-                                    style={step.state === "active"
-                                        ? { background: 'var(--primary)', borderColor: 'var(--primary)', color: 'var(--primary-foreground)' }
-                                        : step.state === "done"
-                                        ? { background: 'color-mix(in srgb, var(--primary) 15%, transparent)', borderColor: 'var(--primary)', color: 'var(--primary)' }
-                                        : { background: 'transparent', borderColor: 'var(--border)', color: 'var(--muted-foreground)' }
-                                    }
-                                >
-                                    {step.num}
+            <div className="bg-card border border-border rounded-3xl p-8 shadow-sm">
+                {/* Resume Upload */}
+                <div className="mb-8">
+                    <label className="block text-[13px] font-bold uppercase tracking-wider mb-3 text-muted-foreground">Resume/CV</label>
+                    <div
+                        onDragOver={(e) => { e.preventDefault(); setIsDragOver(true) }}
+                        onDragLeave={() => setIsDragOver(false)}
+                        onDrop={(e) => { e.preventDefault(); setIsDragOver(false); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]) }}
+                        onClick={() => fileInputRef.current?.click()}
+                        className={cn(
+                            "group relative flex flex-col items-center justify-center border-2 border-dashed rounded-2xl py-12 px-6 transition-all duration-200 cursor-pointer overflow-hidden",
+                            isDragOver ? "border-primary bg-primary/5 scale-[0.99]" : "border-border hover:border-primary/50 hover:bg-muted/30"
+                        )}
+                    >
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+                            className="hidden"
+                            accept=".pdf,.doc,.docx"
+                        />
+                        {file ? (
+                            <div className="flex flex-col items-center text-center animate-in zoom-in-95 duration-200">
+                                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+                                    <CheckCircle2 className="w-8 h-8 text-primary" />
                                 </div>
-                                <span className="text-[13px] font-medium hidden sm:block" style={{ color: step.state === "active" ? 'var(--foreground)' : 'var(--muted-foreground)' }}>
-                                    {step.label}
-                                </span>
+                                <span className="font-bold text-sm">{file.name}</span>
+                                <span className="text-xs text-muted-foreground mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB · Ready to Analyze</span>
                             </div>
-                            {i < 3 && <div className="flex-1 h-px mx-2" style={{ background: 'var(--border)', minWidth: 20 }} />}
-                        </div>
-                    ))}
-                </div>
-
-
-                {/* Upload Zone */}
-                <div
-                    className={cn(
-                        "rounded-[20px] p-16 text-center cursor-pointer transition-all duration-300 mb-4 border-2 border-dashed",
-                        isDragOver || file ? "border-primary bg-primary/5" : "border-border bg-surface hover:border-primary/50 hover:bg-primary/[0.02]"
-                    )}
-                    onDragOver={(e) => { e.preventDefault(); setIsDragOver(true) }}
-                    onDragLeave={() => setIsDragOver(false)}
-                    onDrop={(e) => { e.preventDefault(); setIsDragOver(false); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]) }}
-                    onClick={() => {
-                        if (!file) {
-                            const input = document.createElement("input")
-                            input.type = "file"; input.accept = ".pdf,.doc,.docx"
-                            input.onchange = (e: Event) => { const f = (e.target as HTMLInputElement).files?.[0]; if (f) handleFile(f) }
-                            input.click()
-                        }
-                    }}
-                >
-                    {!file ? (
-                        <>
-                            <div className="w-[72px] h-[72px] rounded-[18px] flex items-center justify-center mx-auto mb-5 bg-primary/10 border border-primary/20">
-                                <FileText className="w-8 h-8 text-primary" />
+                        ) : (
+                            <div className="flex flex-col items-center text-center">
+                                <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4 group-hover:bg-primary/10 transition-colors">
+                                    <FileText className="w-8 h-8 text-muted-foreground group-hover:text-primary transition-colors" />
+                                </div>
+                                <span className="font-bold text-sm">Drop your resume here</span>
+                                <span className="text-xs text-muted-foreground mt-1">PDF, DOCX up to 10MB</span>
                             </div>
-                            <h3 className="font-heading text-xl font-bold mb-2">Drop your resume here</h3>
-                            <p className="text-muted-foreground text-[14px]">or click to browse files</p>
-                            <p className="mt-3 text-xs text-muted-foreground/80">PDF, DOCX, or TXT · Max 5MB</p>
-                        </>
-                    ) : (
-                        <div className="flex flex-col items-center gap-2">
-                            <CheckCircle2 className="w-10 h-10 text-primary" />
-                            <h3 className="font-heading text-lg font-bold">{file.name}</h3>
-                            <p className="text-[14px] text-primary">Parsed successfully · Ready</p>
-                            <button onClick={(e) => { e.stopPropagation(); setFile(null) }} className="text-xs mt-2 text-destructive hover:underline">Remove</button>
-                        </div>
-                    )}
-                </div>
-
-                {/* AI Hint */}
-                <div className="flex items-start gap-3 rounded-xl px-4 py-3.5 mb-8 mt-4 text-sm leading-[1.6] bg-accent-2/10 border border-accent-2/20 text-muted-foreground">
-                    <span className="text-lg shrink-0 mt-0.5">✨</span>
-                    <span>AI will extract your skills, projects, experience gaps and prepare targeted questions — including asking about <strong className="text-foreground">specific projects</strong> you've worked on.</span>
-                </div>
-
-                {/* Divider */}
-                <div className="flex items-center gap-4 mb-7">
-                    <div className="flex-1 h-px bg-border" />
-                    <span className="text-[13px] font-semibold text-muted-foreground/80">OR ADD MANUALLY</span>
-                    <div className="flex-1 h-px bg-border" />
+                        )}
+                    </div>
                 </div>
 
                 {/* Manual Skills */}
-                <div className="mb-7">
-                    <label className="block text-[13px] font-semibold uppercase tracking-[0.5px] mb-2.5 text-muted-foreground">Your Key Skills &amp; Experience</label>
+                <div className="mb-8">
+                    <label className="block text-[13px] font-bold uppercase tracking-wider mb-3 text-muted-foreground">Manual Skills / Experience (Optional)</label>
                     <textarea
                         value={skills}
                         onChange={(e) => setSkills(e.target.value)}
-                        placeholder="e.g. 3 years React, Node.js. Built a payment gateway at XYZ startup. Led team of 4. Strong in DSA..."
+                        placeholder="e.g. 3 years React, Node.js. Built a payment gateway at XYZ startup..."
                         rows={3}
-                        className="w-full rounded-xl px-4 py-3.5 text-sm bg-surface text-foreground font-body border border-border outline-none resize-y transition-all duration-200 focus:border-primary focus:ring-4 focus:ring-primary/10"
+                        className="w-full rounded-2xl px-4 py-4 text-sm bg-muted/30 border border-border outline-none resize-none transition-all duration-200 focus:border-primary focus:ring-4 focus:ring-primary/10"
                     />
                 </div>
 
                 {/* Job Description */}
-                <div className="mb-7">
-                    <label className="block text-[13px] font-semibold uppercase tracking-[0.5px] mb-2.5 text-muted-foreground">Job Description</label>
+                <div className="mb-10">
+                    <label className="block text-[13px] font-bold uppercase tracking-wider mb-3 text-muted-foreground">Target Job Description</label>
                     <textarea
                         value={jobDescription}
                         onChange={(e) => setJobDescription(e.target.value)}
                         placeholder="Paste the JD here. AI will identify gaps between your profile and this role..."
-                        rows={4}
-                        className="w-full rounded-xl px-4 py-3.5 text-sm bg-surface text-foreground font-body border border-border outline-none resize-y transition-all duration-200 focus:border-primary focus:ring-4 focus:ring-primary/10"
+                        rows={5}
+                        className="w-full rounded-2xl px-4 py-4 text-sm bg-muted/30 border border-border outline-none resize-none transition-all duration-200 focus:border-primary focus:ring-4 focus:ring-primary/10"
                     />
                 </div>
 
-                {/* Target Role */}
-                <div className="mb-7">
-                    <label className="block text-[13px] font-semibold uppercase tracking-[0.5px] mb-2.5" style={{ color: '#8892A4' }}>Target Role</label>
-                    <div className="flex flex-wrap gap-2.5">
-                        {roles.map((r) => <Tag key={r} label={r} selected={selectedRole === r} onClick={() => setSelectedRole(r)} />)}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10 pt-6 border-t border-border">
+                    <div className="space-y-6">
+                        <div>
+                            <label className="block text-[13px] font-bold uppercase tracking-wider mb-4 text-muted-foreground">Target Role</label>
+                            <div className="flex flex-wrap gap-2">
+                                {roles.slice(0, 6).map((r) => <Tag key={r} label={r} selected={selectedRole === r} onClick={() => setSelectedRole(r)} />)}
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-[13px] font-bold uppercase tracking-wider mb-4 text-muted-foreground">Experience</label>
+                            <div className="flex flex-wrap gap-2">
+                                {expLevels.map((e) => (
+                                    <button
+                                        key={e}
+                                        onClick={() => setExperience(e)}
+                                        className={cn(
+                                            "px-4 py-2 rounded-full text-[13px] font-medium border transition-all duration-200",
+                                            experience === e ? "bg-accent-2/10 border-accent-2 text-accent-2" : "border-border text-muted-foreground hover:border-accent-2/50"
+                                        )}
+                                    >
+                                        {e}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        <div>
+                            <label className="block text-[13px] font-bold uppercase tracking-wider mb-4 text-muted-foreground">Interview Focus</label>
+                            <div className="flex flex-wrap gap-2">
+                                {interviewTypes.slice(0, 3).map((t) => <Tag key={t} label={t} selected={interviewType === t} onClick={() => setInterviewType(t)} />)}
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-[13px] font-bold uppercase tracking-wider mb-4 text-muted-foreground">Difficulty</label>
+                            <div className="flex gap-2">
+                                {difficulties.map((d) => (
+                                    <button
+                                        key={d.value}
+                                        onClick={() => setDifficulty(d.value as any)}
+                                        className={cn(
+                                            "flex-1 py-2.5 rounded-xl text-[13px] font-bold border transition-all duration-200",
+                                            difficulty === d.value
+                                                ? d.value === "easy" ? "bg-primary/10 border-primary text-primary" : d.value === "medium" ? "bg-accent-4/10 border-accent-4 text-accent-4" : "bg-destructive/10 border-destructive text-destructive"
+                                                : "border-border text-muted-foreground hover:border-border/80"
+                                        )}
+                                    >
+                                        {d.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {/* Experience */}
-                <div className="mb-7">
-                    <label className="block text-[13px] font-semibold uppercase tracking-[0.5px] mb-2.5 text-muted-foreground">Experience Level</label>
-                    <div className="flex flex-wrap gap-2.5">
-                        {expLevels.map((e) => (
-                            <button
-                                key={e}
-                                onClick={() => setExperience(e)}
-                                className={cn(
-                                    "px-4 py-2 rounded-full text-[13px] font-medium border transition-all duration-200",
-                                    experience === e
-                                        ? "bg-accent-2/10 border-accent-2 text-accent-2"
-                                        : "bg-transparent border-border text-muted-foreground hover:border-accent-2/50"
-                                )}
-                            >
-                                {e}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Interview Type */}
-                <div className="mb-7">
-                    <label className="block text-[13px] font-semibold uppercase tracking-[0.5px] mb-2.5 text-muted-foreground">Interview Type</label>
-                    <div className="flex flex-wrap gap-2.5">
-                        {interviewTypes.map((t) => <Tag key={t} label={t} selected={interviewType === t} onClick={() => setInterviewType(t)} />)}
-                    </div>
-                </div>
-
-                {/* Difficulty */}
-                <div className="mb-7">
-                    <label className="block text-[13px] font-semibold uppercase tracking-[0.5px] mb-2.5 text-muted-foreground">Difficulty</label>
-                    <div className="flex gap-2">
-                        {difficulties.map((d) => (
-                            <button
-                                key={d.value}
-                                onClick={() => setDifficulty(d.value as "easy" | "medium" | "hard")}
-                                className={cn(
-                                    "flex-1 py-3 rounded-xl text-[13px] font-medium border text-center transition-all duration-200",
-                                    difficulty === d.value
-                                        ? d.value === "easy"
-                                            ? "bg-primary/10 border-primary text-primary"
-                                            : d.value === "medium"
-                                                ? "bg-accent-4/10 border-accent-4 text-accent-4"
-                                                : "bg-destructive/10 border-destructive text-destructive"
-                                        : "bg-transparent border-border text-muted-foreground hover:border-border/80"
-                                )}
-                            >
-                                {d.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Persona */}
-                <div className="mb-10">
-                    <label className="block text-[13px] font-semibold uppercase tracking-[0.5px] mb-2.5 text-muted-foreground">Interviewer Persona</label>
-                    <div className="flex flex-wrap gap-2.5">
+                <div className="mb-12">
+                    <label className="block text-[13px] font-bold uppercase tracking-wider mb-4 text-muted-foreground text-center">Interviewer Persona</label>
+                    <div className="flex flex-wrap justify-center gap-2">
                         {personas.map((p) => (
                             <button
                                 key={p}
                                 onClick={() => setPersona(p)}
                                 className={cn(
-                                    "px-4 py-2 rounded-full text-[13px] font-medium border transition-all duration-200",
-                                    persona === p
-                                        ? "bg-accent-2/10 border-accent-2 text-accent-2"
-                                        : "bg-transparent border-border text-muted-foreground hover:border-accent-2/50"
+                                    "px-4 py-2.5 rounded-xl text-[13px] font-medium border transition-all duration-200",
+                                    persona === p ? "bg-accent-2/10 border-accent-2 text-accent-2" : "border-border text-muted-foreground hover:border-accent-2/50"
                                 )}
                             >
                                 {p}
@@ -301,25 +252,25 @@ export default function UploadPage() {
                     </div>
                 </div>
 
-                {/* Error */}
                 {error && (
-                    <div className="mb-6 rounded-xl px-4 py-3.5 text-sm bg-destructive/10 border border-destructive/20 text-destructive">
+                    <div className="mb-8 p-4 rounded-xl bg-destructive/5 border border-destructive/20 text-destructive text-sm text-center font-medium animate-in fade-in slide-in-from-top-2">
                         {error}
                     </div>
                 )}
 
-                {/* Footer */}
-                <div className="flex items-center justify-between mt-4 border-t border-border pt-6">
-                    <span className="text-[13px] text-muted-foreground">~10 questions · ~30 min</span>
-                    <button
-                        disabled={(!file && !skills.trim()) || isLoading}
-                        onClick={handleStart}
-                        className="flex items-center gap-2.5 px-8 py-3.5 rounded-xl font-heading font-bold text-base text-primary-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 hover:-translate-y-px bg-primary"
-                    >
-                        {isLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> {loadingStates[loadingStage]}</> : <>Generate Questions &amp; Start <ArrowRight className="w-4 h-4" /></>}
-                    </button>
-                </div>
+                <button
+                    disabled={(!file && !skills.trim()) || isLoading}
+                    onClick={handleStart}
+                    className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl font-heading font-black text-lg text-primary-foreground transition-all duration-300 shadow-xl shadow-primary/20 hover:shadow-primary/30 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed bg-primary"
+                >
+                    {isLoading ? (
+                        <><Loader2 className="w-5 h-5 animate-spin" /> {loadingStates[loadingStage]}</>
+                    ) : (
+                        <>Start Interview <ArrowRight className="w-5 h-5" /></>
+                    )}
+                </button>
+                <p className="text-center text-[11px] text-muted-foreground mt-4 font-medium uppercase tracking-widest">~10 questions · AI-generated tailored feedback</p>
             </div>
-        </div>
+        </PageContainer>
     )
 }

@@ -59,33 +59,22 @@ export function Sidebar() {
                 className={cn(
                     "fixed left-0 top-[68px] bottom-0 z-40 flex flex-col",
                     "border-r border-border bg-card/95 backdrop-blur-2xl",
-                    "transition-all duration-[250ms] ease-in-out overflow-hidden",
+                    "transition-all duration-[200ms] ease-in-out overflow-hidden",
                     isOpen ? "w-60" : "w-[72px]"
                 )}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
             >
-                {/* Expand hint */}
-                {!isOpen && (
-                    <button
-                        onClick={toggle}
-                        className="absolute right-2 top-4 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
-                        aria-label="Expand sidebar"
-                    >
-                        <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
-                )}
-
-                <div className="flex-1 py-5 px-3 flex flex-col gap-0.5 overflow-hidden">
+                <div className="flex-1 py-6 px-3 flex flex-col gap-0.5 overflow-hidden">
                     <div className={cn(
-                        "text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em] px-2 pb-2 mb-1 whitespace-nowrap",
+                        "text-[10px] font-bold text-muted-foreground/50 uppercase tracking-[0.2em] px-3 pb-3 mb-1 whitespace-nowrap",
                         "transition-opacity duration-200",
                         isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
                     )}>
                         Navigation
                     </div>
 
-                    <nav className="flex flex-col gap-0.5">
+                    <nav className="flex flex-col gap-1.5 focus-within:ring-0">
                         {NAV_ITEMS.map((item) => {
                             const isActive = pathname === item.href
                             return (
@@ -94,24 +83,27 @@ export function Sidebar() {
                                     href={item.href}
                                     title={!isOpen ? item.label : undefined}
                                     className={cn(
-                                        "flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-150 group relative",
-                                        "h-10 px-2",
+                                        "flex items-center gap-3 rounded-xl text-[14px] font-semibold transition-all duration-150 group relative",
+                                        "h-11 px-2.5",
                                         isActive
                                             ? "bg-primary/10 text-primary"
-                                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                                            : "text-muted-foreground hover:bg-muted/80 hover:text-foreground"
                                     )}
                                 >
+                                    {/* Active border indicator */}
                                     {isActive && (
-                                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-r-full" />
+                                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full" />
                                     )}
+                                    
                                     <div className={cn(
-                                        "w-8 h-8 flex-shrink-0 rounded-lg flex items-center justify-center transition-colors",
-                                        isActive ? "bg-primary/10" : "group-hover:bg-muted"
+                                        "w-8 h-8 flex-shrink-0 flex items-center justify-center transition-colors",
+                                        isActive ? "text-primary" : "group-hover:text-foreground text-muted-foreground/80"
                                     )}>
-                                        <item.icon className={cn("w-4 h-4", isActive ? "text-primary" : "group-hover:text-foreground")} />
+                                        <item.icon className="w-[18px] h-[18px]" />
                                     </div>
+
                                     <span className={cn(
-                                        "whitespace-nowrap overflow-hidden transition-all duration-200 font-medium",
+                                        "whitespace-nowrap overflow-hidden transition-all duration-200",
                                         isOpen ? "opacity-100 max-w-[140px]" : "opacity-0 max-w-0"
                                     )}>
                                         {item.label}
@@ -122,14 +114,15 @@ export function Sidebar() {
                     </nav>
                 </div>
 
-                <div className="px-3 py-4 border-t border-border">
+                {/* Bottom Section */}
+                <div className="px-3 py-6 border-t border-border mt-auto">
                     <button
                         onClick={() => setShowLogoutConfirm(true)}
                         title={!isOpen ? "Log out" : undefined}
-                        className="flex w-full items-center gap-3 h-10 px-2 rounded-lg text-sm font-medium transition-all group hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                        className="flex w-full items-center gap-3 h-11 px-2.5 rounded-xl text-[14px] font-semibold transition-all group hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
                     >
-                        <div className="w-8 h-8 flex-shrink-0 rounded-lg flex items-center justify-center group-hover:bg-destructive/10 transition-colors">
-                            <LogOut className="w-4 h-4" />
+                        <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center transition-colors">
+                            <LogOut className="w-[18px] h-[18px]" />
                         </div>
                         <span className={cn(
                             "whitespace-nowrap overflow-hidden transition-all duration-200",
