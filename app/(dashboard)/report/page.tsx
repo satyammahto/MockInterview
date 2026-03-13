@@ -9,7 +9,7 @@ import { ScoreCard } from "@/components/report/ScoreCard"
 import { VoiceAnalysis } from "@/components/report/VoiceAnalysis"
 import { ComparisonView } from "@/components/report/ComparisonView"
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "/api"
 
 interface ReportData {
     overall_score: number
@@ -57,7 +57,6 @@ export default function ReportPage() {
     const [report, setReport] = useState<ReportData | null>(null)
     const [loading, setLoading] = useState(true)
     const [expandedQ, setExpandedQ] = useState<number | null>(0)
-    const [mounted, setMounted] = useState(false)
 
     // ── Define fetchReport before useEffect calls it ──
     const fetchReport = useCallback(async (sid: string) => {
@@ -75,7 +74,6 @@ export default function ReportPage() {
     }, [])
 
     useEffect(() => {
-        setMounted(true)
         const sid = localStorage.getItem("prepsense_session_id")
         if (!sid) {
             // No session — show demo report immediately instead of redirecting
@@ -108,8 +106,6 @@ export default function ReportPage() {
     const depth = report?.depth_score ?? 5.9
     const fillerWords = report?.total_filler_words ?? 14
     const avgPace = report?.avg_speaking_pace ?? 118
-
-    const conicPct = Math.round(overall * 0.78)
 
     return (
         <div className="w-full pb-24" style={{ background: '#080B14', color: '#E8EDF5' }}>

@@ -14,7 +14,7 @@ import { AIAvatar } from "@/components/interview/AIAvatar"
 import { TranscriptPanel } from "@/components/interview/TranscriptPanel"
 import { CoachingPrompt } from "@/components/interview/CoachingPrompt"
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "/api"
 
 export default function InterviewPage() {
     const router = useRouter()

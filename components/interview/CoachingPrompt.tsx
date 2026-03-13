@@ -12,9 +12,12 @@ export function CoachingPrompt({ tip, durationMs = 5000 }: CoachingPromptProps) 
 
   useEffect(() => {
     if (tip) {
-      setIsVisible(true);
-      const timer = setTimeout(() => setIsVisible(false), durationMs);
-      return () => clearTimeout(timer);
+      const showTimer = setTimeout(() => setIsVisible(true), 10);
+      const hideTimer = setTimeout(() => setIsVisible(false), durationMs);
+      return () => {
+        clearTimeout(showTimer);
+        clearTimeout(hideTimer);
+      };
     }
   }, [tip, durationMs]);
 

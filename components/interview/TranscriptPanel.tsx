@@ -4,10 +4,11 @@ import { useState } from "react";
 
 interface TranscriptPanelProps {
   transcript: string;
+  interimTranscript?: string;
   isProcessing?: boolean;
 }
 
-export function TranscriptPanel({ transcript, isProcessing = false }: TranscriptPanelProps) {
+export function TranscriptPanel({ transcript, interimTranscript, isProcessing = false }: TranscriptPanelProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
 
@@ -54,6 +55,7 @@ export function TranscriptPanel({ transcript, isProcessing = false }: Transcript
         
         <p className="text-foreground/90 whitespace-pre-wrap">
           {transcript}
+          {interimTranscript && <span className="opacity-60"> {interimTranscript}</span>}
         </p>
 
         {isProcessing && (

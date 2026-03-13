@@ -1,0 +1,32 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Sessions: only the owner can read/write
+    match /sessions/{sessionId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.uid;
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+
+      // Questions sub-collection
+      match /questions/{questionId} {
+        allow read: if request.auth != null
+          && get(/databases/$(database)/documents/sessions/$(sessionId)).data.uid == request.auth.uid;
+        // Write is done server-side via Admin SDK (Cloud Functions)
+        allow write: if false;
+      }
+    }
+
+    // Reports: only the session owner can read
+    match /reports/{sessionId} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.uid;
+      // Only Cloud Functions write reports (Admin SDK bypasses rules)
+      allow write: if false;
+    }
+
+    // Deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

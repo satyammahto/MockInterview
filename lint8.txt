@@ -1,0 +1,116 @@
+﻿
+D:\MegaHack\MockInterview\app\api\dashboard\stats\route.ts
+  1:10  warning  'NextRequest' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\MegaHack\MockInterview\app\interview\page.tsx
+  103:8   warning  React Hook useEffect has a missing dependency: 'handleMicToggle'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  163:18  warning  'e' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+
+D:\MegaHack\MockInterview\app\layout.tsx
+  30:9  warning  Custom fonts not added in `pages/_document.js` will only load for a single page. This is discouraged. See: https://nextjs.org/docs/messages/no-page-custom-font  @next/next/no-page-custom-font
+
+D:\MegaHack\MockInterview\components\dashboard\ProgressChart.tsx
+  27:54  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+  69:30  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+D:\MegaHack\MockInterview\components\dashboard\ProgressChart.tsx:69:30
+  67 |             ticks={[0, 25, 50, 75, 100]}
+  68 |           />
+> 69 |           <Tooltip content={<CustomTooltip />} />
+     |                              ^^^^^^^^^^^^^ This component is created during render
+  70 |           <Line
+  71 |             type="monotone"
+  72 |             dataKey="score"
+
+D:\MegaHack\MockInterview\components\dashboard\ProgressChart.tsx:27:25
+  25 |   // Ensure data is sorted by date chronologically if not already
+  26 |   // Formatter for Tooltip
+> 27 |   const CustomTooltip = ({ active, payload, label }: any) => {
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 28 |     if (active && payload && payload.length) {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 29 |       return (
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 39 |     return null;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 40 |   };
+     | ^^^^ The component is created during render here
+  41 |
+  42 |   return (
+  43 |     <div className="w-full h-full min-h-[300px] mt-4">  react-hooks/static-components
+
+D:\MegaHack\MockInterview\components\interview\VoiceRecorder.tsx
+  18:20  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+D:\MegaHack\MockInterview\components\interview\VoiceRecorder.tsx:18:20
+  16 |     // Base wave pattern + audioLevel scaling
+  17 |     const baseHeight = Math.sin((index / NUM_BARS) * Math.PI) * 100;
+> 18 |     const noise = (Math.random() - 0.5) * 20;
+     |                    ^^^^^^^^^^^^^ Cannot call impure function
+  19 |     // Scale strongly by audio level (which is 0-1)
+  20 |     const activeHeight = Math.max(4, (baseHeight + noise) * (audioLevel * 1.5 + 0.2));
+  21 |     return Math.min(60, activeHeight);  react-hooks/purity
+  34:44  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+D:\MegaHack\MockInterview\components\interview\VoiceRecorder.tsx:34:44
+  32 |               height: `${getBarHeight(i)}px`,
+  33 |               background: isRecording ? '#4EFFA3' : '#1E2535',
+> 34 |               opacity: isRecording ? 0.8 + Math.random() * 0.2 : 0.4,
+     |                                            ^^^^^^^^^^^^^ Cannot call impure function
+  35 |             }}
+  36 |           />
+  37 |         ))}                                                                                                  react-hooks/purity
+
+D:\MegaHack\MockInterview\hooks\useSpeechSynthesis.ts
+  9:44  warning  'forceFallback' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\MegaHack\MockInterview\hooks\useSpeechToText.ts
+  77:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  78:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\MegaHack\MockInterview\hooks\useVoiceRecorder.ts
+  19:72  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+  29:53  error  Error: Cannot access variable before it is declared
+
+`updateAudioLevel` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+D:\MegaHack\MockInterview\hooks\useVoiceRecorder.ts:29:53
+  27 |       setAudioLevel(avg / 255);
+  28 |     }
+> 29 |     requestFrameRef.current = requestAnimationFrame(updateAudioLevel);
+     |                                                     ^^^^^^^^^^^^^^^^ `updateAudioLevel` accessed before it is declared
+  30 |   }, []);
+  31 |
+  32 |   const getSupportedMimeType = () => {
+
+D:\MegaHack\MockInterview\hooks\useVoiceRecorder.ts:17:3
+  15 |   const requestFrameRef = useRef<number | null>(null);
+  16 |
+> 17 |   const updateAudioLevel = useCallback(() => {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 18 |     if (analyserRef.current && dataArrayRef.current) {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 19 |       analyserRef.current.getByteFrequencyData(dataArrayRef.current as any);
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 29 |     requestFrameRef.current = requestAnimationFrame(updateAudioLevel);
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 30 |   }, []);
+     | ^^^^^^^^^^ `updateAudioLevel` is declared here
+  31 |
+  32 |   const getSupportedMimeType = () => {
+  33 |     const types = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/mp4"];  react-hooks/immutability
+  46:67  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+
+D:\MegaHack\MockInterview\store\interviewStore.ts
+  2:36  warning  'InterviewSession' is defined but never used  @typescript-eslint/no-unused-vars
+
+Γ£û 15 problems (9 errors, 6 warnings)
+

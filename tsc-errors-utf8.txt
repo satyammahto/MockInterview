@@ -1,0 +1,9 @@
+﻿app/api/report/generate/route.ts(41,28): error TS18047: 'adminAuth' is possibly 'null'.
+app/api/report/generate/route.ts(55,24): error TS18047: 'adminDb' is possibly 'null'.
+app/api/report/generate/route.ts(73,25): error TS18047: 'adminDb' is possibly 'null'.
+app/api/report/generate/route.ts(167,23): error TS18047: 'adminDb' is possibly 'null'.
+app/api/resume/analyze/route.ts(57,13): error TS18047: 'adminAuth' is possibly 'null'.
+hooks/useSpeechToText.ts(11,34): error TS2552: Cannot find name 'SpeechRecognition'. Did you mean 'SpeechRecognitionEvent'?
+hooks/useSpeechToText.ts(12,40): error TS2552: Cannot find name 'SpeechRecognition'. Did you mean 'SpeechRecognitionEvent'?
+hooks/useSpeechToText.ts(31,33): error TS2552: Cannot find name 'SpeechRecognition'. Did you mean 'SpeechRecognitionEvent'?
+hooks/useSpeechToText.ts(75,28): error TS7006: Parameter 'event' implicitly has an 'any' type.

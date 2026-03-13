@@ -210,7 +210,7 @@ export default function LandingPage() {
                             { step: "01", title: "Upload Profile", desc: "Drag & drop your resume and paste the target job description. We extract your core skills.", color: "#4EFFA3" },
                             { step: "02", title: "Live Interview", desc: "Join the voice room. The AI asks personalized questions, analyzes your voice, and gives follow-ups.", color: "#7B61FF" },
                             { step: "03", title: "Get Scored", desc: "Receive a deep-dive report on clarity, filler words, WPM, and step-by-step answers on how to improve.", color: "#FFD166" }
-                        ].map((item, i) => (
+                        ].map((item) => (
                             <div key={item.step} className="relative bg-[#0E1220] border border-[#1E2535] rounded-3xl p-8 z-10 hover:-translate-y-2 transition-transform duration-300">
                                 <div className="w-16 h-16 rounded-full flex items-center justify-center font-heading text-2xl font-bold mx-auto mb-6 shadow-xl" style={{ background: '#1A2235', color: item.color, border: `1px solid ${item.color}40` }}>
                                     {item.step}
@@ -244,7 +244,7 @@ export default function LandingPage() {
                             <div className="flex gap-1 mb-4">
                                 {[1,2,3,4,5].map(star => <span key={star} className="text-[#FFD166] text-sm">★</span>)}
                             </div>
-                            <p className="text-[#E8EDF5]/90 text-sm leading-relaxed mb-6 italic">"{t.text}"</p>
+                            <p className="text-[#E8EDF5]/90 text-sm leading-relaxed mb-6 italic">&quot;{t.text}&quot;</p>
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-black" style={{ background: t.color.replace('0.1', '1') }}>
                                     {t.name.charAt(0)}

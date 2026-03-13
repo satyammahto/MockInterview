@@ -1,0 +1,28 @@
+﻿app/api/resume/analyze/route.ts(3,17): error TS7016: Could not find a declaration file for module 'pdf-parse'. 'D:/MegaHack/MockInterview/node_modules/pdf-parse/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/pdf-parse` if it exists or add a new declaration (.d.ts) file containing `declare module 'pdf-parse';`
+app/api/session/start/route.ts(3,17): error TS7016: Could not find a declaration file for module 'pdf-parse'. 'D:/MegaHack/MockInterview/node_modules/pdf-parse/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/pdf-parse` if it exists or add a new declaration (.d.ts) file containing `declare module 'pdf-parse';`
+app/api/session/start/route.ts(150,59): error TS2345: Argument of type '(q: { text?: string; type?: string; }) => { text: string; type: string; }' is not assignable to parameter of type '(value: string, index: number, array: string[]) => { text: string; type: string; }'.
+  Types of parameters 'q' and 'value' are incompatible.
+    Type 'string' has no properties in common with type '{ text?: string | undefined; type?: string | undefined; }'.
+app/api/sessions/[id]/generate-report/route.ts(39,14): error TS2339: Property 'answer' does not exist on type '{ id: string; }'.
+app/api/sessions/[id]/generate-report/route.ts(39,26): error TS2339: Property 'answer' does not exist on type '{ id: string; }'.
+app/api/sessions/[id]/generate-report/route.ts(42,15): error TS2339: Property 'text' does not exist on type '{ id: string; }'.
+app/api/sessions/[id]/generate-report/route.ts(43,25): error TS2339: Property 'answer' does not exist on type '{ id: string; }'.
+app/api/sessions/[id]/report/route.ts(20,15): error TS2339: Property 'score' does not exist on type '{ id: string; }'.
+app/api/sessions/[id]/report/route.ts(21,29): error TS2339: Property 'score' does not exist on type '{ id: string; }'.
+app/api/sessions/[id]/report/route.ts(26,30): error TS2339: Property 'text' does not exist on type '{ id: string; }'.
+app/api/sessions/[id]/report/route.ts(27,30): error TS2339: Property 'type' does not exist on type '{ id: string; }'.
+app/api/sessions/[id]/report/route.ts(28,28): error TS2339: Property 'answer' does not exist on type '{ id: string; }'.
+app/api/sessions/[id]/report/route.ts(29,29): error TS2339: Property 'idealAnswer' does not exist on type '{ id: string; }'.
+app/api/sessions/[id]/report/route.ts(30,22): error TS2339: Property 'score' does not exist on type '{ id: string; }'.
+app/api/sessions/[id]/report/route.ts(31,25): error TS2339: Property 'tips' does not exist on type '{ id: string; }'.
+app/api/sessions/[id]/report/route.ts(40,15): error TS2339: Property 'tips' does not exist on type '{ id: string; }'.
+app/api/sessions/[id]/report/route.ts(40,39): error TS2339: Property 'tips' does not exist on type '{ id: string; }'.
+app/api/sessions/[id]/report/route.ts(41,36): error TS2339: Property 'tips' does not exist on type '{ id: string; }'.
+app/api/upload/route.ts(44,24): error TS2345: Argument of type 'UploadApiResponse | undefined' is not assignable to parameter of type 'Record<string, unknown> | PromiseLike<Record<string, unknown>>'.
+  Type 'undefined' is not assignable to type 'Record<string, unknown> | PromiseLike<Record<string, unknown>>'.
+hooks/useSpeechToText.ts(11,34): error TS2552: Cannot find name 'SpeechRecognition'. Did you mean 'SpeechRecognitionEvent'?
+hooks/useSpeechToText.ts(12,40): error TS2552: Cannot find name 'SpeechRecognition'. Did you mean 'SpeechRecognitionEvent'?
+hooks/useSpeechToText.ts(31,33): error TS2552: Cannot find name 'SpeechRecognition'. Did you mean 'SpeechRecognitionEvent'?
+hooks/useSpeechToText.ts(75,28): error TS7006: Parameter 'event' implicitly has an 'any' type.

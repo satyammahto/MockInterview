@@ -1,8 +1,5 @@
 "use client"
 
-import Link from "next/link"
-import { ArrowLeft, Server, Database, BrainCircuit, Globe, Code2, Zap, LayoutDashboard, Cpu } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
 import React from "react"
 
 const archLayers = [
