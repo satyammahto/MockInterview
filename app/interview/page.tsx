@@ -7,6 +7,7 @@ import { useInterviewStore } from "@/store/interviewStore"
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder"
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis"
 import { useSpeechToText } from "@/hooks/useSpeechToText"
+import { PageContainer } from "@/components/layout/PageContainer"
 
 // New components
 import { VoiceRecorder } from "@/components/interview/VoiceRecorder"
@@ -179,120 +180,142 @@ export default function InterviewPage() {
     const isSlow = transcript.split(" ").length < 15 && transcript.length > 0 && !isListening
 
     return (
-        <div className="w-full min-h-[calc(100vh-68px)] bg-[#080B14] text-[#E8EDF5]">
-            <div className="grid h-full" style={{ gridTemplateColumns: '1fr 380px', minHeight: 'calc(100vh - 68px)' }}>
+        <div className="min-h-[calc(100vh-68px)] flex flex-col pt-8">
+            <PageContainer maxWidth="standard" className="flex-1 flex flex-col gap-8">
                 
-                {/* ══ LEFT PANEL ══ */}
-                <div className="flex flex-col gap-6 p-10 overflow-y-auto border-r border-[#1E2535]">
-                    
-                    {/* Header: Progress & Timer */}
-                    <div className="flex items-center justify-between">
-                        <div className="inline-flex items-center px-4 py-1.5 rounded-full font-heading font-bold text-sm bg-[#4EFFA3] text-black">
-                            Question {currentQuestionIndex + 1} of {questions.length}
+                {/* ══ HEADER ══ */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                        <div className="inline-flex items-center px-3 py-1 rounded-full font-heading font-bold text-[10px] uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+                            Session Progress: {currentQuestionIndex + 1} / {questions.length}
                         </div>
-                        <div className="flex items-center gap-3">
-                            <button className="w-11 h-11 rounded-xl flex items-center justify-center bg-[#141926] border border-[#1E2535] transition-colors hover:bg-white/5">
-                                <Pause className="w-4 h-4 text-[#8892A4]" />
-                            </button>
-                            <div className="w-12 h-12 rounded-full flex items-center justify-center font-heading font-bold text-lg border-[3px]"
-                                 style={{ borderColor: timeRemaining <= 15 ? '#FF6B6B' : timeRemaining <= 30 ? '#FFD166' : '#4EFFA3' }}>
+                        <h1 className="text-xl font-bold">Interviewing for {sessionId === "demo-session" ? "Software Engineer" : "Your Role"}</h1>
+                    </div>
+
+                    <div className="flex items-center gap-6">
+                        {/* Timer */}
+                        <div className="flex items-center gap-4 bg-card border border-border px-5 py-2.5 rounded-2xl shadow-sm">
+                            <div className="w-10 h-10 rounded-full flex items-center justify-center font-heading font-black text-xl border-[3px]"
+                                 style={{ 
+                                     borderColor: timeRemaining <= 15 ? 'var(--accent-3)' : timeRemaining <= 30 ? 'var(--accent-2)' : 'var(--primary)',
+                                     color: timeRemaining <= 15 ? 'var(--accent-3)' : timeRemaining <= 30 ? 'var(--accent-2)' : 'var(--primary)'
+                                 }}>
                                 {timeRemaining}
                             </div>
-                        </div>
-                    </div>
-
-                    <div className="w-full">
-                        <div className="flex justify-between items-center mb-1.5 text-xs font-medium text-[#8892A4]">
-                            <span>Progress</span>
-                            <span>{progress}%</span>
-                        </div>
-                        <div className="h-1.5 rounded-full w-full bg-[#1E2535]">
-                            <div className="h-full rounded-full bg-gradient-to-r from-[#7B61FF] to-[#4EFFA3] transition-all duration-500" style={{ width: `${progress}%` }} />
-                        </div>
-                    </div>
-
-                    {/* AI Avatar */}
-                    <AIAvatar isSpeaking={isSpeaking} isProcessing={isSubmitting} />
-
-                    {/* Error */}
-                    {error && (
-                        <div className="rounded-xl px-4 py-3 text-sm text-[#FF6B6B] bg-[#FF6B6B]/10 border border-[#FF6B6B]/20">
-                            {error}
-                        </div>
-                    )}
-
-                    {/* Question Card */}
-                    <div className="rounded-3xl p-8 relative overflow-hidden bg-[#0E1220] border border-[#1E2535]">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-[#7B61FF]/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
-                        
-                        <div className="inline-flex items-center px-3 py-1 rounded-[6px] text-[11px] font-bold uppercase tracking-[1px] mb-5 bg-[#7B61FF]/10 border border-[#7B61FF]/20 text-[#7B61FF]">
-                            {currentQ.type || "Behavioral"}
-                        </div>
-                        
-                        <h2 className="font-heading font-bold leading-[1.35] tracking-tight mb-6 text-2xl text-[#E8EDF5]">
-                            {currentQ.text}
-                        </h2>
-
-                        {followup && (
-                            <div className="mt-4 flex items-start gap-3 rounded-xl px-4 py-4 text-sm leading-relaxed bg-[#FFD166]/10 border border-[#FFD166]/20 text-[#8892A4]">
-                                <span className="text-lg">🔁</span>
-                                <span><strong className="text-[#FFD166] font-normal">Follow-up:</strong> {followup}</span>
+                            <div className="text-left hidden sm:block">
+                                <div className="text-[10px] font-bold text-muted-foreground uppercase opacity-60">Time Left</div>
+                                <div className="text-xs font-bold">{timeRemaining} Seconds</div>
                             </div>
-                        )}
-                    </div>
-
-                    {/* Bottom Actions */}
-                    <div className="flex items-center justify-between pt-4 mt-auto">
-                        <button
-                            onClick={() => handleNext()}
-                            className="text-[#8892A4] hover:text-[#E8EDF5] text-sm font-semibold transition-colors disabled:opacity-50"
-                            disabled={isSubmitting}
-                        >
-                            Skip
-                        </button>
-                        
-                        <button
-                            onClick={handleNext}
-                            disabled={isSubmitting || isRecording}
-                            className="flex items-center gap-2 px-8 py-3.5 rounded-xl font-heading font-bold text-[15px] text-black bg-[#4EFFA3] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(78,255,163,0.25)]"
-                        >
-                            {isSubmitting 
-                                ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting</>
-                                : <>{currentQuestionIndex >= questions.length - 1 ? "Finish" : "Next"} <ArrowRight className="w-4 h-4" /></>
-                            }
-                        </button>
-                    </div>
-                </div>
-
-                {/* ══ RIGHT PANEL ══ */}
-                <div className="flex flex-col gap-5 p-6 bg-[#060810] border-l border-[#1E2535]/50 overflow-y-auto relative">
-                    {!sttSupported && (
-                        <div className="rounded-xl px-4 py-3 text-xs text-[#FFD166] bg-[#FFD166]/10 border border-[#FFD166]/20">
-                            ⚠️ Live transcription is not supported in this browser. Try Chrome or Edge.
                         </div>
-                    )}
-                    {/* Transcript Panel takes top half */}
-                    <div className="h-[40vh] min-h-[250px] mb-4">
-                        <TranscriptPanel
-                            transcript={transcript}
-                            interimTranscript={interimTranscript}
-                            isProcessing={isListening}
-                        />
-                    </div>
 
-                    {/* Interaction controls */}
-                    <div className="flex flex-col items-center justify-center p-6 bg-[#0E1220] rounded-2xl border border-[#1E2535] mt-auto">
-                        <VoiceRecorder 
-                            isRecording={isRecording}
-                            audioLevel={audioLevel}
-                            onToggle={handleMicToggle}
-                            disabled={isSpeaking}
-                        />
+                        <button className="w-12 h-12 rounded-2xl flex items-center justify-center bg-card border border-border transition-all hover:bg-muted shadow-sm active:scale-95">
+                            <Pause className="w-4 h-4" />
+                        </button>
                     </div>
                 </div>
-            </div>
 
-            {/* Coaching Prompt Overlay */}
+                <div className="w-full bg-muted/30 h-2 rounded-full overflow-hidden">
+                    <div 
+                        className="h-full bg-primary transition-all duration-700 ease-out shadow-[0_0_12px_rgba(16,185,129,0.3)]" 
+                        style={{ width: `${progress}%` }} 
+                    />
+                </div>
+
+                {/* ══ INTERVIEW HUD ══ */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-[var(--section-gap)] items-start">
+                    
+                    {/* Left/Center: Question & Avatar */}
+                    <div className="lg:col-span-12 xl:col-span-8 flex flex-col gap-6">
+                        
+                        {/* Interaction Zone (Avatar + Question) */}
+                        <div className="bg-card border border-border rounded-[32px] p-8 md:p-12 shadow-sm relative overflow-hidden flex flex-col items-center text-center">
+                            <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full blur-[100px] -mr-40 -mt-40 pointer-events-none" />
+                            <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent/5 rounded-full blur-[80px] -ml-32 -mb-32 pointer-events-none" />
+
+                            <AIAvatar isSpeaking={isSpeaking} isProcessing={isSubmitting} />
+                            
+                            <div className="mt-10 max-w-2xl mx-auto">
+                                <div className="inline-flex items-center px-3 py-1 rounded-[6px] text-[10px] font-bold uppercase tracking-[1px] mb-6 bg-primary/10 border border-primary/20 text-primary">
+                                    {currentQ.type || "Behavioral"}
+                                </div>
+                                
+                                <h2 className="font-heading font-extrabold leading-[1.3] text-2xl md:text-3xl tracking-tight mb-8">
+                                    "{currentQ.text}"
+                                </h2>
+
+                                {followup && (
+                                    <div className="inline-flex items-start gap-3 rounded-2xl px-5 py-4 text-sm leading-relaxed bg-accent/5 border border-accent/10 text-muted-foreground text-left max-w-lg mx-auto animate-in slide-in-from-top-2">
+                                        <span className="text-lg">🔁</span>
+                                        <span><strong className="text-foreground font-bold italic">Follow-up:</strong> {followup}</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Controls Bar */}
+                        <div className="bg-card border border-border rounded-2xl p-6 flex items-center justify-between shadow-sm">
+                            <button
+                                onClick={() => handleNext()}
+                                className="text-muted-foreground hover:text-foreground text-sm font-bold transition-all px-4 py-2 rounded-xl hover:bg-muted"
+                                disabled={isSubmitting}
+                            >
+                                Skip Question
+                            </button>
+                            
+                            <div className="flex items-center gap-4">
+                                <VoiceRecorder 
+                                    isRecording={isRecording}
+                                    audioLevel={audioLevel}
+                                    onToggle={handleMicToggle}
+                                    disabled={isSpeaking}
+                                />
+
+                                <button
+                                    onClick={handleNext}
+                                    disabled={isSubmitting || isRecording}
+                                    className="flex items-center gap-2 px-8 h-12 rounded-xl font-heading font-black text-sm text-primary-foreground bg-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98]"
+                                >
+                                    {isSubmitting 
+                                        ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting</>
+                                        : <>{currentQuestionIndex >= questions.length - 1 ? "Complete Interview" : "Next Question"} <ArrowRight className="w-4 h-4" /></>
+                                    }
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right/Bottom: Sidebar (Transcript/Coaching) */}
+                    <div className="lg:col-span-12 xl:col-span-4 flex flex-col gap-6 h-full">
+                        <div className="bg-card border border-border rounded-[32px] overflow-hidden shadow-sm flex flex-col min-h-[400px] xl:min-h-full">
+                            <div className="px-6 py-4 border-b border-border bg-muted/20 flex items-center justify-between">
+                                <h3 className="text-xs font-bold uppercase tracking-widest opacity-60">Live Transcript</h3>
+                                {isListening && <div className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" /> <span className="text-[10px] font-bold">Listening</span></div>}
+                            </div>
+                            <div className="flex-1">
+                                <TranscriptPanel
+                                    transcript={transcript}
+                                    interimTranscript={interimTranscript}
+                                    isProcessing={isListening}
+                                />
+                            </div>
+                            {!sttSupported && (
+                                <div className="px-6 py-4 bg-accent/5 border-t border-accent/10">
+                                    <p className="text-[10px] leading-relaxed text-accent font-medium">⚠️ Live transcription is not supported in this browser. Try Chrome for the best experience.</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Error Banner */}
+                {error && (
+                    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 rounded-2xl px-6 py-4 text-sm font-bold text-destructive bg-destructive/10 border border-destructive/20 backdrop-blur-xl animate-in slide-in-from-bottom-5">
+                        {error}
+                    </div>
+                )}
+            </PageContainer>
+
+            {/* Coaching-Prompt-Overlay already handled by standard PageContainer padding/spacing */}
             <CoachingPrompt 
                 tip={isSlow ? "You're speaking a bit slowly. Try to slightly pick up the pace and sound confident." : null} 
             />
