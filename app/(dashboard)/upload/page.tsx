@@ -117,15 +117,7 @@ export default function UploadPage() {
                         </div>
                     ))}
                 </div>
-                                </div>
-                                <span className="text-[13px] font-medium hidden sm:block" style={{ color: step.state === "active" ? '#E8EDF5' : '#4A5568' }}>
-                                    {step.label}
-                                </span>
-                            </div>
-                            {i < 3 && <div className="flex-1 h-px mx-2" style={{ background: '#1E2535', minWidth: 20 }} />}
-                        </div>
-                    ))}
-                </div>
+
 
                 {/* Upload Zone */}
                 <div
