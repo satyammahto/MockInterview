@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Float, JSON, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Text, Float, JSON, ForeignKey, DateTime
 from database import Base
 
 
@@ -13,7 +13,18 @@ class FeedbackReport(Base):
     clarity_score = Column(Float, nullable=True)
     relevance_score = Column(Float, nullable=True)
     pacing_score = Column(Float, nullable=True)
-    strengths = Column(JSON, nullable=True)    # ["Strong technical depth", ...]
-    improvements = Column(JSON, nullable=True) # ["Use STAR method", ...]
-    advice = Column(JSON, nullable=True)       # ["Practice quantifying results", ...]
+    strengths = Column(JSON, nullable=True)     # ["Strong technical depth", ...]
+    improvements = Column(JSON, nullable=True)  # ["Use STAR method", ...]
+    advice = Column(JSON, nullable=True)        # ["Practice quantifying results", ...]
+    summary_message = Column(Text, nullable=True)  # AI-generated holistic summary
+
+    # ── Confidence Detection (Feature 2) ──────────────────────────────────────
+    filler_word_count = Column(Integer, nullable=True, default=0)
+    pace_wpm = Column(Float, nullable=True, default=0.0)
+    confidence_issues = Column(JSON, nullable=True)  # ["too many filler words", ...]
+
+    # ── STAR Method Evaluation (Feature 3) ────────────────────────────────────
+    star_score = Column(Float, nullable=True, default=0.0)
+    star_analysis = Column(JSON, nullable=True)  # Per-question STAR breakdown
+
     created_at = Column(DateTime, default=datetime.utcnow)

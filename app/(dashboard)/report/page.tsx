@@ -22,6 +22,26 @@ interface ReportData {
     improvements: string[]
     advice: string[]
     summary_message: string
+    // Confidence Analysis (Feature 2)
+    confidence_analysis?: {
+        confidence_score: number
+        filler_word_count: number
+        pace_wpm: number
+        top_filler_words: { word: string; count: number }[]
+        issues: string[]
+    }
+    // STAR Evaluation (Feature 3)
+    star_evaluation?: {
+        star_score: number
+        per_question: {
+            situation: boolean
+            task: boolean
+            action: boolean
+            result: boolean
+            star_score: number
+            missing_components: string[]
+        }[]
+    }
 }
 
 interface AnswerData {
@@ -107,8 +127,8 @@ export default function ReportPage() {
     const confidence = report?.metrics?.confidence ?? 64
     const relevance = report?.metrics?.relevance ?? 88
     const depth = report?.metrics?.pacing ?? 59
-    const fillerWords = 14 // Handled locally per-question now, we can default or aggregate later
-    const avgPace = report?.metrics?.pacing ?? 118
+    const fillerWords = report?.confidence_analysis?.filler_word_count ?? 14
+    const avgPace = report?.confidence_analysis?.pace_wpm ?? (report?.metrics?.pacing ?? 118)
 
     const scoreMetrics = [
         { label: "Clarity", val: clarity, colorClass: "text-primary", barClass: "bg-primary", pct: clarity },
@@ -118,9 +138,9 @@ export default function ReportPage() {
     ]
 
     const voiceStats = [
-        { label: 'Estimated Pauses', val: `0`, suffix: "times", colorClass: "text-destructive" },
-        { label: "Pacing Score", val: `${avgPace}`, suffix: "/100", colorClass: "text-accent-4" },
-        { label: "Confidence Score", val: `${confidence}`, suffix: "/100", colorClass: "text-primary" },
+        { label: "Filler Words", val: `${fillerWords}`, suffix: "total", colorClass: "text-destructive" },
+        { label: "Speaking Pace", val: `${avgPace}`, suffix: "WPM", colorClass: "text-accent-4" },
+        { label: "Confidence Score", val: `${report?.confidence_analysis?.confidence_score ?? confidence}`, suffix: "/100", colorClass: "text-primary" },
     ]
 
     return (
@@ -197,6 +217,63 @@ export default function ReportPage() {
                         </div>
                     ))}
                 </div>
+
+                {/* ── Confidence Analysis ── */}
+                {report?.confidence_analysis && (
+                    <div className="rounded-[20px] p-7 mb-8 bg-card border border-border shadow-sm">
+                        <h3 className="font-heading text-[20px] font-extrabold mb-5 flex items-center gap-2">
+                            🧠 Confidence Analysis
+                        </h3>
+                        {(report.confidence_analysis.issues?.length ?? 0) > 0 && (
+                            <div className="space-y-2">
+                                {report.confidence_analysis.issues?.map((issue, i) => (
+                                    <div key={i} className="flex items-start gap-2 text-sm rounded-xl px-4 py-3 bg-destructive/5 border border-destructive/15 text-destructive">
+                                        <span>⚠️</span>
+                                        <span>{issue}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* ── STAR Evaluation ── */}
+                {report?.star_evaluation && (
+                    <div className="rounded-[20px] p-7 mb-8 bg-card border border-border shadow-sm">
+                        <h3 className="font-heading text-[20px] font-extrabold mb-2 flex items-center gap-2">
+                            ⭐ STAR Method Evaluation
+                        </h3>
+                        <p className="text-[13px] mb-5 text-muted-foreground">
+                            Overall STAR Score: <span className={cn("font-bold", report.star_evaluation.star_score >= 70 ? "text-primary" : report.star_evaluation.star_score >= 40 ? "text-accent-4" : "text-destructive")}>{report.star_evaluation.star_score}/100</span>
+                        </p>
+                        <div className="space-y-3">
+                            {report.star_evaluation.per_question?.map((star, i) => (
+                                <div key={i} className="rounded-[14px] p-4 bg-muted/30 border border-border">
+                                    <div className="text-[11px] font-semibold uppercase tracking-[1px] mb-3 text-muted-foreground">
+                                        Question {i + 1} · STAR Score: {star.star_score}/100
+                                    </div>
+                                    <div className="flex flex-wrap gap-3">
+                                        {(["situation", "task", "action", "result"] as const).map((comp) => (
+                                            <div key={comp} className={cn(
+                                                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-bold uppercase tracking-[0.5px] border",
+                                                star[comp]
+                                                    ? "bg-primary/10 border-primary/25 text-primary"
+                                                    : "bg-destructive/10 border-destructive/25 text-destructive"
+                                            )}>
+                                                {star[comp] ? '✔' : '✘'} {comp}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {star.missing_components?.length > 0 && (
+                                        <p className="text-[12px] mt-2 text-muted-foreground">
+                                            Missing: {star.missing_components.join(", ")}
+                                        </p>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* ── Q&A Breakdown ── */}
                 <div className="mb-12">

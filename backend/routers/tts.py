@@ -1,11 +1,14 @@
 """
-POST /tts — Coqui TTS text-to-speech for AI interviewer voice
+POST /tts — Coqui TTS text-to-speech for AI interviewer voice.
+Returns WAV audio bytes on success, or a JSON fallback when TTS is unavailable.
+The frontend should use the Web Speech API (browser TTS) when fallback=true.
 """
+import logging
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import Response
+from fastapi.responses import Response, JSONResponse
 from pydantic import BaseModel
-from services.coqui_tts import synthesize_speech
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/tts", tags=["Text-to-Speech"])
 
 
@@ -17,28 +20,35 @@ class TTSRequest(BaseModel):
 async def text_to_speech(body: TTSRequest):
     """
     Convert question text to speech. Returns WAV audio bytes.
-    Called by the interview page to have the AI read the question aloud.
+    If Coqui TTS is unavailable, returns JSON with fallback=true and the original text,
+    so the frontend can use the browser's Web Speech API instead.
     """
     if not body.text or not body.text.strip():
         raise HTTPException(status_code=400, detail="Text cannot be empty.")
-    
+
     if len(body.text) > 1000:
         raise HTTPException(status_code=400, detail="Text is too long (max 1000 characters).")
 
-    try:
-        audio_bytes = synthesize_speech(body.text.strip())
-    except Exception as e:
-        import logging
-        logging.getLogger(__name__).warning(f"[TTS] Synthesis error: {e}")
-        audio_bytes = b""
+    text = body.text.strip()
 
-    if not audio_bytes:
-        # Return 200 with an empty body + custom header so the frontend knows to
-        # fall back to window.speechSynthesis — never block interview flow.
-        return Response(
-            content=b"",
-            media_type="audio/wav",
-            headers={"X-TTS-Fallback": "true"},
+    try:
+        from services.coqui_tts import synthesize_speech
+        audio_bytes = synthesize_speech(text)
+
+        if audio_bytes:
+            return Response(content=audio_bytes, media_type="audio/wav")
+
+        # synthesize_speech returned empty bytes — use browser fallback
+        logger.warning("[TTS] Coqui returned empty audio, using browser fallback.")
+        return JSONResponse(
+            status_code=200,
+            content={"fallback": True, "text": text, "reason": "TTS returned empty audio"}
         )
 
-    return Response(content=audio_bytes, media_type="audio/wav")
+    except Exception as e:
+        # Coqui TTS library not installed or model not available — use browser fallback
+        logger.warning(f"[TTS] Coqui TTS not available: {e}. Returning browser fallback.")
+        return JSONResponse(
+            status_code=200,
+            content={"fallback": True, "text": text, "reason": "TTS service unavailable"}
+        )

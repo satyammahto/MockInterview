@@ -1,7 +1,3 @@
-"""
-Backend configuration using python-decouple.
-All values are loaded from the .env file.
-"""
 from dataclasses import dataclass, field
 from functools import lru_cache
 from decouple import config
@@ -23,11 +19,13 @@ class Settings:
 
     @property
     def has_groq(self) -> bool:
-        return bool(self.GROQ_API_KEY and self.GROQ_API_KEY != "your_groq_api_key_here")
+        """True if Groq API key is configured and non-empty."""
+        return bool(self.GROQ_API_KEY and self.GROQ_API_KEY.strip())
 
     @property
     def has_gemini(self) -> bool:
-        return bool(self.GEMINI_API_KEY)
+        """True if Gemini API key is configured and non-empty."""
+        return bool(self.GEMINI_API_KEY and self.GEMINI_API_KEY.strip())
 
 
 @lru_cache()
@@ -37,7 +35,7 @@ def get_settings() -> Settings:
         GROQ_API_KEY=config("GROQ_API_KEY", default=""),
         GROQ_MODEL=config("GROQ_MODEL", default="llama-3.3-70b-versatile"),
         GEMINI_API_KEY=config("GEMINI_API_KEY", default=""),
-        GEMINI_MODEL=config("GEMINI_MODEL", default="gemini-1.5-flash"),
+        GEMINI_MODEL=config("GEMINI_MODEL", default="gemini-1.5-pro"),
         WHISPER_MODEL=config("WHISPER_MODEL", default="base"),
         TTS_MODEL=config("TTS_MODEL", default="tts_models/en/ljspeech/tacotron2-DDC"),
         TTS_USE_GPU=config("TTS_USE_GPU", default=False, cast=bool),

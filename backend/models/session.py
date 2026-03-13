@@ -15,6 +15,9 @@ class InterviewSession(Base):
     difficulty = Column(
         Enum("easy", "medium", "hard"), nullable=False, default="medium"
     )
+    interview_mode = Column(
+        String(20), nullable=False, default="mixed"
+    )  # hr, technical, behavioral, stress, mixed
     num_questions = Column(String(5), nullable=False, default="5")
     status = Column(
         Enum("in_progress", "completed"), nullable=False, default="in_progress"

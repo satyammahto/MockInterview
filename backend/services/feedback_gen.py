@@ -1,7 +1,7 @@
 """
 Feedback Report Generation Service using Groq Llama3.
 Evaluates all Q&A pairs from an interview session and produces
-detailed per-question feedback and overall scores.
+detailed per-question feedback, STAR analysis, and overall scores.
 """
 import re
 import json
@@ -30,7 +30,6 @@ def _get_client():
 def _extract_json_object(text: str) -> Optional[dict]:
     """Robustly extract a JSON object from LLM response text."""
     text = text.strip()
-    # Try direct parse first
     try:
         parsed = json.loads(text)
         if isinstance(parsed, dict):
@@ -38,7 +37,6 @@ def _extract_json_object(text: str) -> Optional[dict]:
     except json.JSONDecodeError:
         pass
 
-    # Use regex to find first JSON object in the text
     match = re.search(r'\{[\s\S]*\}', text)
     if match:
         try:
@@ -55,7 +53,8 @@ def evaluate_answer(
     candidate_answer: str,
 ) -> Dict[str, Any]:
     """
-    Evaluate a single answer. Returns score, ideal_answer, and tips.
+    Evaluate a single answer. Returns score, ideal_answer, tips, feedback,
+    and STAR analysis for behavioral questions.
     """
     from config import get_settings
     settings = get_settings()
@@ -66,8 +65,13 @@ def evaluate_answer(
             "ideal_answer": "No answer provided.",
             "tips": ["Make sure to speak your answer clearly when the microphone is active."],
             "feedback": "No answer was recorded for this question.",
+            "star_analysis": {
+                "situation": False, "task": False, "action": False, "result": False,
+                "star_score": 0, "missing_components": ["situation", "task", "action", "result"],
+            },
         }
 
+    # Include STAR evaluation in the prompt for ALL question types
     prompt = f"""You are an expert interview coach evaluating a candidate answer.
 
 Question Type: {question_type}
@@ -78,14 +82,28 @@ Evaluate the answer based on:
 - Technical accuracy and depth
 - Communication clarity
 - Relevance to the question
-- Structure (e.g., STAR method for behavioral)
+- Structure (STAR method: Situation, Task, Action, Result)
+
+Also analyze whether the answer follows the STAR format:
+- Situation: Did the candidate describe a specific context or scenario?
+- Task: Did the candidate explain the challenge or responsibility?
+- Action: Did the candidate describe what they specifically did?
+- Result: Did the candidate mention the outcome with measurable impact?
 
 IMPORTANT: Respond with ONLY a raw JSON object. No markdown, no explanation, just the JSON.
 {{
   "score": <integer 0-100>,
   "ideal_answer": "<concise model answer in 3-5 sentences showing depth>",
   "tips": ["<specific improvement tip 1>", "<specific improvement tip 2>"],
-  "feedback": "<1-2 sentence summary of what was good and what needs work>"
+  "feedback": "<1-2 sentence summary of what was good and what needs work>",
+  "star_analysis": {{
+    "situation": <true/false>,
+    "task": <true/false>,
+    "action": <true/false>,
+    "result": <true/false>,
+    "star_score": <integer 0-100>,
+    "missing_components": ["<list of missing STAR components>"]
+  }}
 }}"""
 
     try:
@@ -93,33 +111,43 @@ IMPORTANT: Respond with ONLY a raw JSON object. No markdown, no explanation, jus
             model=settings.GROQ_MODEL,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.3,
-            max_tokens=700,
+            max_tokens=900,
         )
         content = response.choices[0].message.content
         logger.debug(f"[FeedbackGen] Evaluate raw: {content[:300]}")
 
         result = _extract_json_object(content)
         if result:
+            # Ensure star_analysis exists
+            if "star_analysis" not in result:
+                result["star_analysis"] = _default_star_analysis()
             return result
 
         logger.warning("[FeedbackGen] Could not parse evaluation JSON. Using fallback.")
-        return {
-            "score": 50,
-            "ideal_answer": "Unable to generate ideal answer at this time.",
-            "tips": ["Practice structuring answers with the STAR method."],
-            "feedback": "Answer evaluation failed — please try again."
-        }
+        return _fallback_evaluation()
 
     except RuntimeError:
         raise
     except Exception as e:
         logger.error(f"[FeedbackGen] Answer evaluation error: {e}")
-        return {
-            "score": 50,
-            "ideal_answer": "Unable to generate ideal answer at this time.",
-            "tips": ["Practice structuring answers with the STAR method."],
-            "feedback": "Answer evaluation failed — please try again."
-        }
+        return _fallback_evaluation()
+
+
+def _default_star_analysis() -> Dict[str, Any]:
+    return {
+        "situation": False, "task": False, "action": False, "result": False,
+        "star_score": 0, "missing_components": ["situation", "task", "action", "result"],
+    }
+
+
+def _fallback_evaluation() -> Dict[str, Any]:
+    return {
+        "score": 50,
+        "ideal_answer": "Unable to generate ideal answer at this time.",
+        "tips": ["Practice structuring answers with the STAR method."],
+        "feedback": "Answer evaluation failed — please try again.",
+        "star_analysis": _default_star_analysis(),
+    }
 
 
 def generate_overall_feedback(

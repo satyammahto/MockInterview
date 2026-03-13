@@ -6,6 +6,20 @@ type SpeechRecognitionEvent = {
 };
 
 // Web Speech API type shim for TypeScript
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  maxAlternatives: number;
+  onstart: ((event: any) => void) | null;
+  onresult: ((event: any) => void) | null;
+  onerror: ((event: any) => void) | null;
+  onend: ((event: any) => void) | null;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+}
+
 declare global {
   interface Window {
     SpeechRecognition: new () => SpeechRecognition;
@@ -54,7 +68,7 @@ export function useSpeechToText(): UseSpeechToTextReturn {
       setInterimTranscript("");
     };
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    recognition.onresult = (event: any) => {
       let interim = "";
       let final = finalTranscriptRef.current;
 
@@ -102,7 +116,7 @@ export function useSpeechToText(): UseSpeechToTextReturn {
 
   const stopListening = useCallback(() => {
     if (recognitionRef.current) {
-      recognitionRef.current.onend = null; // prevent auto-restart
+      (recognitionRef.current as any).onend = null; // prevent auto-restart
       recognitionRef.current.stop();
       recognitionRef.current = null;
     }
@@ -120,7 +134,7 @@ export function useSpeechToText(): UseSpeechToTextReturn {
   useEffect(() => {
     return () => {
       if (recognitionRef.current) {
-        recognitionRef.current.onend = null;
+        (recognitionRef.current as any).onend = null;
         recognitionRef.current.stop();
         recognitionRef.current = null;
       }

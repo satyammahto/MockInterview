@@ -11,6 +11,7 @@ from models.session import InterviewSession
 from models.question import Question, Answer
 from models.report import FeedbackReport
 from services.feedback_gen import evaluate_answer, generate_overall_feedback
+from services.confidence_analyzer import analyze_confidence, aggregate_confidence
 
 router = APIRouter(prefix="/sessions", tags=["Report"])
 
@@ -19,11 +20,11 @@ router = APIRouter(prefix="/sessions", tags=["Report"])
 def generate_report(session_id: str, db: Session = Depends(get_db)):
     """
     1. Load all Q&A pairs for this session
-    2. Call Groq to evaluate each answer (score, ideal, tips)
-    3. Call Groq for overall session metrics
-    4. Save everything to DB
-    5. Return the full report
-    Called by interview page after the last answer is submitted.
+    2. Call Groq to evaluate each answer (score, ideal, tips, STAR analysis)
+    3. Run confidence analysis on each answer transcript
+    4. Call Groq for overall session metrics
+    5. Save everything to DB
+    6. Return the full report
     """
     session = db.query(InterviewSession).filter(InterviewSession.id == session_id).first()
     if not session:
@@ -41,6 +42,8 @@ def generate_report(session_id: str, db: Session = Depends(get_db)):
     # Build Q&A pairs and evaluate each answer
     qa_pairs = []
     feedback_items = []
+    confidence_analyses = []
+    star_analyses = []
 
     for q in questions:
         answer = db.query(Answer).filter(
@@ -49,11 +52,25 @@ def generate_report(session_id: str, db: Session = Depends(get_db)):
         ).first()
 
         transcript = answer.transcript if answer else ""
+        duration = answer.time_taken_seconds if answer else 0
+
+        # AI evaluation (includes STAR analysis)
         evaluation = evaluate_answer(
             question_text=q.text,
             question_type=q.type,
             candidate_answer=transcript,
         )
+
+        # Confidence analysis (local, no API)
+        conf_analysis = analyze_confidence(transcript, duration or 0)
+        confidence_analyses.append(conf_analysis)
+
+        # Extract STAR analysis from evaluation
+        star = evaluation.get("star_analysis", {
+            "situation": False, "task": False, "action": False, "result": False,
+            "star_score": 0, "missing_components": ["situation", "task", "action", "result"],
+        })
+        star_analyses.append(star)
 
         # Update answer record with AI evaluation
         if answer:
@@ -77,7 +94,21 @@ def generate_report(session_id: str, db: Session = Depends(get_db)):
             "your_answer": transcript,
             "ideal_answer": evaluation.get("ideal_answer", ""),
             "tips": evaluation.get("tips", []),
+            "feedback": evaluation.get("feedback", ""),
+            "star_analysis": star,
+            "confidence": {
+                "confidence_score": conf_analysis["confidence_score"],
+                "filler_word_count": conf_analysis["filler_word_count"],
+                "pace_wpm": conf_analysis["pace_wpm"],
+            },
         })
+
+    # Aggregate confidence across all answers
+    agg_confidence = aggregate_confidence(confidence_analyses)
+
+    # Aggregate STAR scores
+    star_scores = [s.get("star_score", 0) for s in star_analyses]
+    avg_star_score = round(sum(star_scores) / max(len(star_scores), 1))
 
     # Generate overall feedback
     overall = generate_overall_feedback(
@@ -104,6 +135,16 @@ def generate_report(session_id: str, db: Session = Depends(get_db)):
     report.strengths = overall.get("strengths", [])
     report.improvements = overall.get("improvements", [])
     report.advice = overall.get("advice", [])
+    report.summary_message = overall.get("summary_message", "")
+
+    # Confidence detection fields
+    report.filler_word_count = agg_confidence["total_filler_count"]
+    report.pace_wpm = agg_confidence["avg_pace_wpm"]
+    report.confidence_issues = agg_confidence["all_issues"]
+
+    # STAR evaluation fields
+    report.star_score = avg_star_score
+    report.star_analysis = star_analyses
 
     # Update session status
     session.status = "completed"
@@ -113,7 +154,7 @@ def generate_report(session_id: str, db: Session = Depends(get_db)):
 
     db.commit()
 
-    return _build_report_response(overall, feedback_items)
+    return _build_report_response(overall, feedback_items, agg_confidence, avg_star_score, star_analyses)
 
 
 @router.get("/{session_id}/report")
@@ -164,13 +205,30 @@ def get_report(session_id: str, db: Session = Depends(get_db)):
         "strengths": report.strengths,
         "improvements": report.improvements,
         "advice": report.advice,
-        "summary_message": "Review your answers and the ideal responses to keep improving.",
+        "summary_message": report.summary_message or "Review your answers and the ideal responses to keep improving.",
     }
 
-    return _build_report_response(overall, feedback_items)
+    agg_confidence = {
+        "avg_confidence_score": report.confidence_score or 0,
+        "total_filler_count": report.filler_word_count or 0,
+        "avg_pace_wpm": report.pace_wpm or 0.0,
+        "top_filler_words": [],
+        "all_issues": report.confidence_issues or [],
+    }
+
+    return _build_report_response(
+        overall, feedback_items, agg_confidence,
+        report.star_score or 0, report.star_analysis or []
+    )
 
 
-def _build_report_response(overall: dict, feedback_items: list) -> dict:
+def _build_report_response(
+    overall: dict,
+    feedback_items: list,
+    confidence: dict,
+    star_score: float,
+    star_analyses: list,
+) -> dict:
     return {
         "overall_score": overall.get("overall_score", 0),
         "metrics": {
@@ -184,4 +242,19 @@ def _build_report_response(overall: dict, feedback_items: list) -> dict:
         "improvements": overall.get("improvements", []),
         "advice": overall.get("advice", []),
         "summary_message": overall.get("summary_message", ""),
+
+        # Confidence Detection (Feature 2)
+        "confidence_analysis": {
+            "confidence_score": confidence.get("avg_confidence_score", 0),
+            "filler_word_count": confidence.get("total_filler_count", 0),
+            "pace_wpm": confidence.get("avg_pace_wpm", 0.0),
+            "top_filler_words": confidence.get("top_filler_words", []),
+            "issues": confidence.get("all_issues", []),
+        },
+
+        # STAR Method Evaluation (Feature 3)
+        "star_evaluation": {
+            "star_score": star_score,
+            "per_question": star_analyses,
+        },
     }

@@ -1,8 +1,6 @@
-from services.resume_parser import extract_skills
-from services.question_gen import generate_questions, generate_followup_question
-from services.whisper_stt import transcribe_audio
-from services.coqui_tts import synthesize_speech
-from services.feedback_gen import evaluate_answer, generate_overall_feedback
+# Services package — lazy imports only to prevent startup crashes
+# Individual service functions are imported directly in each module that uses them.
+# Do NOT add eager imports here for heavy dependencies (TTS, ML models, etc.)
 
 __all__ = [
     "extract_skills",
