@@ -1,11 +1,12 @@
 import Link from "next/link"
-import { Home, FileText, BarChart2, Settings, Mic } from "lucide-react"
+import { Home, FileText, BarChart2, Settings, Mic, Sparkles } from "lucide-react"
 
 export function Sidebar() {
     const navItems = [
         { icon: Home, label: "Dashboard", href: "/dashboard" },
         { icon: Mic, label: "New Interview", href: "/upload" },
         { icon: FileText, label: "Resume Analyzer", href: "/resume-analyzer" },
+        { icon: Sparkles, label: "Question Generator", href: "/question-generator" },
         { icon: BarChart2, label: "Reports", href: "/report" },
         { icon: Settings, label: "Settings", href: "/settings" },
     ]
