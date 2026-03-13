@@ -59,3 +59,7 @@ venv/
 .env.dev.example
 .env.test.example
 >>>>>>> theirs
+
+.env.local
+.env
+.env*.local
