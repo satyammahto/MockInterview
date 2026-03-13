@@ -1,8 +1,9 @@
 "use client"
 
 import Link from "next/link"
-import { ArrowLeft, Server, Database, BrainCircuit, Globe, Code2, Zap, LayoutDashboard, Cpu } from "lucide-react"
+import { ArrowLeft, Server, Database, BrainCircuit, Globe, Code2, Zap, LayoutDashboard, Cpu, type LucideIcon } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
+import React from "react"
 
 export default function ArchitecturePage() {
     const stack = [
@@ -151,7 +152,7 @@ export default function ArchitecturePage() {
     )
 }
 
-function DiagramNode({ icon: Icon, label, sub, color, glow = false }: { icon: any, label: string, sub: string, color: string, glow?: boolean }) {
+function DiagramNode({ icon: Icon, label, sub, color, glow = false }: { icon: LucideIcon, label: string, sub: string, color: string, glow?: boolean }) {
     return (
         <div className="relative group">
             {glow && <div className="absolute inset-0 bg-accent-4/20 blur-2xl rounded-2xl group-hover:bg-accent-4/40 transition-colors" />}
@@ -164,6 +165,6 @@ function DiagramNode({ icon: Icon, label, sub, color, glow = false }: { icon: an
     )
 }
 
-function MicIcon(props: any) {
+function MicIcon(props: React.SVGProps<SVGSVGElement>) {
     return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" x2="12" y1="19" y2="22" /></svg>
 }

@@ -58,8 +58,8 @@ export default function ReportPage() {
             }
             const data: Report = await res.json()
             setReport(data)
-        } catch (err: any) {
-            setError(err.message || "Could not load report.")
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : "Could not load report.")
         } finally {
             setIsLoading(false)
         }

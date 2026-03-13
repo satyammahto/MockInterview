@@ -40,6 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+<<<<<<< ours
 # Python
 venv/
 __pycache__/
@@ -52,3 +53,24 @@ __pycache__/
 # Node / Next.js
 node_modules/
 .next/
+=======
+
+__pycache__/
+*.pyc
+.env
+venv/
+.env.local
+.env.example
+.env.prod
+.env.dev
+.env.test
+.env.prod.local
+.env.dev.local
+.env.test.local
+.env.prod.example
+.env.dev.example
+.env.test.example
+.env.prod.example
+.env.dev.example
+.env.test.example
+>>>>>>> theirs

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Mic, Square, ArrowRight, Loader2, Activity, MessageSquare, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -43,6 +43,13 @@ export default function InterviewPage() {
 
     const currentQ = questions[questionIndex]
 
+    const stopRecording = useCallback(() => {
+        if (mediaRecorderRef.current && isRecording) {
+            mediaRecorderRef.current.stop()
+            setIsRecording(false)
+        }
+    }, [isRecording])
+
     // Timer
     useEffect(() => {
         let interval: NodeJS.Timeout
@@ -52,7 +59,7 @@ export default function InterviewPage() {
             stopRecording()
         }
         return () => clearInterval(interval)
-    }, [isRecording, timeRemaining])
+    }, [isRecording, timeRemaining, stopRecording])
 
     const startRecording = async () => {
         try {
@@ -77,13 +84,6 @@ export default function InterviewPage() {
             setError("")
         } catch {
             setError("Microphone access denied. Please allow microphone permissions.")
-        }
-    }
-
-    const stopRecording = () => {
-        if (mediaRecorderRef.current && isRecording) {
-            mediaRecorderRef.current.stop()
-            setIsRecording(false)
         }
     }
 
