@@ -1,49 +1,170 @@
+"use client"
+
+import { useRef, useCallback, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
-import { Home, FileText, BarChart2, Settings, Mic } from "lucide-react"
+import { usePathname } from "next/navigation"
+import { Home, FileText, BarChart2, Settings, Mic, LogOut, X, ChevronRight } from "lucide-react"
+import { logoutAction } from "@/app/actions/auth"
+import { useSidebar } from "@/components/SidebarContext"
+import { cn } from "@/lib/utils"
+
+const NAV_ITEMS = [
+    { icon: Home, label: "Dashboard", href: "/dashboard" },
+    { icon: Mic, label: "New Interview", href: "/upload" },
+    { icon: FileText, label: "Resume Analyzer", href: "/resume-analyzer" },
+    { icon: BarChart2, label: "Reports", href: "/report" },
+    { icon: Settings, label: "Settings", href: "/settings" },
+]
 
 export function Sidebar() {
-    const navItems = [
-        { icon: Home, label: "Dashboard", href: "/dashboard" },
-        { icon: Mic, label: "New Interview", href: "/upload" },
-        { icon: FileText, label: "Resume Analyzer", href: "/resume-analyzer" },
-        { icon: BarChart2, label: "Reports", href: "/report" },
-        { icon: Settings, label: "Settings", href: "/settings" },
-    ]
+    const pathname = usePathname()
+    const { isOpen, toggle, close } = useSidebar()
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+    const collapseTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+    const handleLogout = async () => {
+        localStorage.clear()
+        sessionStorage.clear()
+        await logoutAction()
+    }
+
+    const handleMouseLeave = useCallback(() => {
+        collapseTimer.current = setTimeout(() => {
+            close()
+        }, 2500)
+    }, [close])
+
+    const handleMouseEnter = useCallback(() => {
+        if (collapseTimer.current) {
+            clearTimeout(collapseTimer.current)
+            collapseTimer.current = null
+        }
+    }, [])
+
+    useEffect(() => {
+        return () => {
+            if (collapseTimer.current) clearTimeout(collapseTimer.current)
+        }
+    }, [])
+
+    // Collapse on route change
+    useEffect(() => {
+        close()
+    }, [pathname, close])
 
     return (
-        <aside className="w-64 fixed left-0 top-[68px] bottom-0 border-r border-white/[0.05] p-5 flex flex-col gap-1 z-40" style={{ background: 'rgba(6, 8, 16, 0.95)', backdropFilter: 'blur(24px)' }}>
-            <div className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em] px-3 py-2 mb-1">Navigation</div>
-            <nav className="flex flex-col gap-0.5">
-                {navItems.map((item) => (
-                    <Link
-                        key={item.label}
-                        href={item.href}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-white/[0.06] hover:text-foreground transition-all duration-150 group"
+        <>
+            <aside
+                className={cn(
+                    "fixed left-0 top-[68px] bottom-0 z-40 flex flex-col",
+                    "border-r border-border bg-card/95 backdrop-blur-2xl",
+                    "transition-all duration-[250ms] ease-in-out overflow-hidden",
+                    isOpen ? "w-60" : "w-[72px]"
+                )}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+            >
+                {/* Expand hint */}
+                {!isOpen && (
+                    <button
+                        onClick={toggle}
+                        className="absolute right-2 top-4 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+                        aria-label="Expand sidebar"
                     >
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-transparent group-hover:bg-white/[0.06] transition-colors duration-150">
-                            <item.icon className="w-4 h-4 group-hover:text-accent transition-colors duration-150" />
-                        </div>
-                        {item.label}
-                    </Link>
-                ))}
-            </nav>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                )}
 
-            <div className="mt-auto">
-                <div className="rounded-xl p-4 relative overflow-hidden group cursor-pointer"
-                    style={{ background: 'linear-gradient(135deg, rgba(78,255,163,0.06) 0%, rgba(123,97,255,0.06) 100%)', border: '1px solid rgba(78,255,163,0.12)' }}>
-                    <div className="absolute inset-0 bg-gradient-to-br from-accent/10 to-accent-2/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-2 mb-1.5">
-                            <div className="w-1.5 h-1.5 rounded-full bg-accent shadow-[0_0_6px_rgba(78,255,163,0.8)]" />
-                            <div className="font-heading font-bold text-sm text-foreground">Pro Plan</div>
+                <div className="flex-1 py-5 px-3 flex flex-col gap-0.5 overflow-hidden">
+                    <div className={cn(
+                        "text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em] px-2 pb-2 mb-1 whitespace-nowrap",
+                        "transition-opacity duration-200",
+                        isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+                    )}>
+                        Navigation
+                    </div>
+
+                    <nav className="flex flex-col gap-0.5">
+                        {NAV_ITEMS.map((item) => {
+                            const isActive = pathname === item.href
+                            return (
+                                <Link
+                                    key={item.label}
+                                    href={item.href}
+                                    title={!isOpen ? item.label : undefined}
+                                    className={cn(
+                                        "flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-150 group relative",
+                                        "h-10 px-2",
+                                        isActive
+                                            ? "bg-primary/10 text-primary"
+                                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                                    )}
+                                >
+                                    {isActive && (
+                                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-r-full" />
+                                    )}
+                                    <div className={cn(
+                                        "w-8 h-8 flex-shrink-0 rounded-lg flex items-center justify-center transition-colors",
+                                        isActive ? "bg-primary/10" : "group-hover:bg-muted"
+                                    )}>
+                                        <item.icon className={cn("w-4 h-4", isActive ? "text-primary" : "group-hover:text-foreground")} />
+                                    </div>
+                                    <span className={cn(
+                                        "whitespace-nowrap overflow-hidden transition-all duration-200 font-medium",
+                                        isOpen ? "opacity-100 max-w-[140px]" : "opacity-0 max-w-0"
+                                    )}>
+                                        {item.label}
+                                    </span>
+                                </Link>
+                            )
+                        })}
+                    </nav>
+                </div>
+
+                <div className="px-3 py-4 border-t border-border">
+                    <button
+                        onClick={() => setShowLogoutConfirm(true)}
+                        title={!isOpen ? "Log out" : undefined}
+                        className="flex w-full items-center gap-3 h-10 px-2 rounded-lg text-sm font-medium transition-all group hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                    >
+                        <div className="w-8 h-8 flex-shrink-0 rounded-lg flex items-center justify-center group-hover:bg-destructive/10 transition-colors">
+                            <LogOut className="w-4 h-4" />
                         </div>
-                        <p className="text-xs text-muted-foreground mb-3 leading-relaxed">Unlimited AI Interviews & Custom Resumes</p>
-                        <button className="w-full text-xs font-bold bg-accent/10 hover:bg-accent/20 text-accent border border-accent/20 py-2 rounded-lg transition-all duration-150 hover:border-accent/40">
-                            Upgrade →
-                        </button>
+                        <span className={cn(
+                            "whitespace-nowrap overflow-hidden transition-all duration-200",
+                            isOpen ? "opacity-100 max-w-[140px]" : "opacity-0 max-w-0"
+                        )}>
+                            Log out
+                        </span>
+                    </button>
+                </div>
+            </aside>
+
+            {/* Logout Confirmation Modal */}
+            {showLogoutConfirm && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="w-full max-w-sm bg-card border border-border rounded-2xl p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="font-heading text-lg font-bold">Sign out?</h3>
+                            <button onClick={() => setShowLogoutConfirm(false)} className="p-1 rounded-full hover:bg-muted transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
+                            Are you sure you want to log out of PrepSense? You&apos;ll need to sign in again to access your interviews.
+                        </p>
+                        <div className="flex gap-3">
+                            <button onClick={() => setShowLogoutConfirm(false)} className="flex-1 px-4 py-2.5 rounded-xl border border-border text-sm font-bold hover:bg-muted transition-all">
+                                Cancel
+                            </button>
+                            <button onClick={handleLogout} className="flex-1 px-4 py-2.5 rounded-xl bg-destructive text-white text-sm font-bold hover:bg-destructive/90 transition-all shadow-lg shadow-destructive/20">
+                                Sign out
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </aside>
+            )}
+        </>
     )
 }

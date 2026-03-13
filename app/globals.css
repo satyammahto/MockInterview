@@ -53,39 +53,41 @@
 
 @plugin "tailwindcss-animate";
 
-/* ── Design Tokens ── */
+/* ── Design Tokens (Production Palette) ── */
+
+/* Light mode */
 :root {
-  --background: #E8EDF5;
-  --foreground: #080B14;
+  --background: #F8FAFC;
+  --foreground: #0F172A;
   --card: #FFFFFF;
-  --card-foreground: #080B14;
+  --card-foreground: #0F172A;
   --popover: #FFFFFF;
-  --popover-foreground: #080B14;
-  --primary: #2DFFA0;
-  --primary-foreground: #060A12;
-  --secondary: #0C1020;
-  --secondary-foreground: #E8EDF5;
-  --muted: #131823;
-  --muted-foreground: #7A8499;
-  --accent: #2DFFA0;
-  --accent-foreground: #060A12;
-  --destructive: #FF5C5C;
+  --popover-foreground: #0F172A;
+  --primary: #10B981;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F1F5F9;
+  --secondary-foreground: #0F172A;
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
+  --accent: #10B981;
+  --accent-foreground: #FFFFFF;
+  --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
-  --border: #1A2235;
-  --input: #1A2235;
-  --ring: #2DFFA0;
+  --border: #E2E8F0;
+  --input: #E2E8F0;
+  --ring: #10B981;
   --radius: 0.875rem;
 
-  --surface: #0C1020;
-  --surface2: #131823;
+  --surface: #FFFFFF;
+  --surface2: #F8FAFC;
 
-  /* Brand colors — slightly richer/deeper than before */
-  --accent-1: #2DFFA0;   /* mint green — primary */
-  --accent-2: #7C5CFC;   /* electric violet */
-  --accent-3: #FF5C5C;   /* coral red */
-  --accent-4: #FFC947;   /* warm amber */
+  --accent-1: #10B981;
+  --accent-2: #7C5CFC;
+  --accent-3: #EF4444;
+  --accent-4: #F59E0B;
 }
 
+/* Dark mode — uses the richer #2DFFA0 mint palette from main */
 .dark {
   --background: #060A12;
   --foreground: #ECF0FB;
@@ -106,6 +108,9 @@
   --border: #1A2235;
   --input: #1A2235;
   --ring: #2DFFA0;
+
+  --surface: #0C1020;
+  --surface2: #131823;
 
   --accent-1: #2DFFA0;
   --accent-2: #7C5CFC;

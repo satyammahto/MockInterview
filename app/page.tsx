@@ -117,7 +117,7 @@ export default function LandingPage() {
                 {/* CTAs */}
                 <div className="flex flex-col sm:flex-row gap-4 justify-center flex-wrap">
                     <Link
-                        href="/upload"
+                        href="/auth/signup"
                         className="flex items-center gap-2.5 px-9 py-4 rounded-xl font-heading font-bold text-base text-black transition-all duration-200 hover:-translate-y-0.5"
                         style={{ background: '#4EFFA3', boxShadow: '0 0 0 0 transparent' }}
                         onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 16px 40px rgba(78,255,163,0.35)' }}
@@ -126,13 +126,13 @@ export default function LandingPage() {
                         🎙️ Start Free Mock Interview
                     </Link>
                     <Link
-                        href="/architecture"
+                        href="/auth/login"
                         className="flex items-center gap-2.5 px-9 py-4 rounded-xl font-heading font-semibold text-base transition-all duration-200"
                         style={{ background: 'transparent', border: '1px solid #1E2535', color: '#E8EDF5' }}
                         onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.borderColor = '#8892A4'; (e.currentTarget as HTMLAnchorElement).style.background = '#0E1220' }}
                         onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.borderColor = '#1E2535'; (e.currentTarget as HTMLAnchorElement).style.background = 'transparent' }}
                     >
-                        View Architecture <ArrowRight className="w-4 h-4" />
+                        Sign in <ArrowRight className="w-4 h-4" />
                     </Link>
                 </div>
 

@@ -13,11 +13,6 @@ export default function SettingsPage() {
         { id: "privacy", label: "Privacy & Security", icon: Shield },
     ]
 
-    const panelStyle: React.CSSProperties = {
-        background: 'rgba(10,14,26,0.7)',
-        border: '1px solid rgba(255,255,255,0.07)',
-        backdropFilter: 'blur(20px)',
-    }
 
     return (
         <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-400 pb-20">
@@ -48,7 +43,7 @@ export default function SettingsPage() {
 
                 {/* Settings Content */}
                 <div className="flex-1 space-y-5">
-                    <div className="rounded-2xl p-7" style={panelStyle}>
+                    <div className="rounded-2xl p-7 bg-card border border-border shadow-sm">
                         <h2 className="font-heading text-lg font-bold mb-7 tracking-tight">Appearance</h2>
 
                         <div className="space-y-7">
@@ -57,13 +52,9 @@ export default function SettingsPage() {
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     <button
                                         onClick={() => setTheme("light")}
-                                        className="flex flex-col items-center gap-2.5 p-4 rounded-xl transition-all duration-150 hover:-translate-y-px"
-                                        style={theme === 'light'
-                                            ? { border: '2px solid rgba(78,255,163,0.5)', background: 'rgba(78,255,163,0.05)' }
-                                            : { border: '1px solid rgba(255,255,255,0.09)', background: 'rgba(255,255,255,0.02)' }
-                                        }
+                                        className={`flex flex-col items-center gap-2.5 p-4 rounded-xl transition-all duration-150 hover:-translate-y-px border-2 ${theme === 'light' ? 'border-primary bg-primary/5' : 'border-border bg-muted/50 hover:border-primary/40'}`}
                                     >
-                                        <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                                        <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-muted">
                                             <Sun className="w-5 h-5" />
                                         </div>
                                         <span className="text-sm font-medium">Light</span>
@@ -71,13 +62,9 @@ export default function SettingsPage() {
 
                                     <button
                                         onClick={() => setTheme("dark")}
-                                        className="flex flex-col items-center gap-2.5 p-4 rounded-xl transition-all duration-150 hover:-translate-y-px"
-                                        style={theme === 'dark'
-                                            ? { border: '2px solid rgba(78,255,163,0.5)', background: 'rgba(78,255,163,0.05)' }
-                                            : { border: '1px solid rgba(255,255,255,0.09)', background: 'rgba(255,255,255,0.02)' }
-                                        }
+                                        className={`flex flex-col items-center gap-2.5 p-4 rounded-xl transition-all duration-150 hover:-translate-y-px border-2 ${theme === 'dark' ? 'border-primary bg-primary/5' : 'border-border bg-muted/50 hover:border-primary/40'}`}
                                     >
-                                        <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                                        <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-muted">
                                             <Moon className="w-5 h-5" />
                                         </div>
                                         <span className="text-sm font-medium">Dark</span>
@@ -85,13 +72,9 @@ export default function SettingsPage() {
 
                                     <button
                                         onClick={() => setTheme("system")}
-                                        className="flex flex-col items-center gap-2.5 p-4 rounded-xl transition-all duration-150 hover:-translate-y-px"
-                                        style={theme === 'system'
-                                            ? { border: '2px solid rgba(78,255,163,0.5)', background: 'rgba(78,255,163,0.05)' }
-                                            : { border: '1px solid rgba(255,255,255,0.09)', background: 'rgba(255,255,255,0.02)' }
-                                        }
+                                        className={`flex flex-col items-center gap-2.5 p-4 rounded-xl transition-all duration-150 hover:-translate-y-px border-2 ${theme === 'system' ? 'border-primary bg-primary/5' : 'border-border bg-muted/50 hover:border-primary/40'}`}
                                     >
-                                        <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                                        <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-muted">
                                             <Monitor className="w-5 h-5" />
                                         </div>
                                         <span className="text-sm font-medium">System</span>
@@ -99,7 +82,7 @@ export default function SettingsPage() {
                                 </div>
                             </div>
 
-                            <div className="pt-6" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+                            <div className="pt-6 border-t border-border">
                                 <label className="text-sm font-bold text-foreground mb-1 block">Reduce Motion</label>
                                 <p className="text-xs text-muted-foreground mb-4">Disable animations and page transitions.</p>
                                 <label className="relative inline-flex items-center cursor-pointer">
@@ -111,7 +94,7 @@ export default function SettingsPage() {
                     </div>
 
                     {/* Danger Zone */}
-                    <div className="rounded-2xl p-7" style={{ background: 'rgba(255,107,107,0.03)', border: '1px solid rgba(255,107,107,0.15)' }}>
+                    <div className="rounded-2xl p-7 bg-destructive/5 border border-destructive/20">
                         <h2 className="font-heading text-base font-bold text-destructive mb-2 flex items-center gap-2">
                             <LogOut className="w-4 h-4" />
                             Danger Zone

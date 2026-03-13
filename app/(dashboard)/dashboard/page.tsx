@@ -93,9 +93,9 @@ export default function DashboardPage() {
             </div>
 
             {error && (
-                <div className="rounded-xl px-5 py-4 text-sm font-medium text-destructive flex items-start gap-3" style={{ background: 'rgba(255,107,107,0.06)', border: '1px solid rgba(255,107,107,0.15)' }}>
-                    <span className="mt-0.5">⚠</span>
-                    <span>{error} — Showing empty state.</span>
+                <div className="rounded-xl px-5 py-3 text-sm text-muted-foreground flex items-start gap-3 bg-muted border border-border">
+                    <span className="mt-0.5">ℹ️</span>
+                    <span>Could not connect to server — showing empty state. Start your first interview to see stats here!</span>
                 </div>
             )}
 
@@ -103,8 +103,7 @@ export default function DashboardPage() {
             {statCards.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {statCards.map((stat, i) => (
-                        <div key={i} className="relative rounded-2xl p-6 group hover:-translate-y-0.5 transition-all duration-150 overflow-hidden"
-                            style={{ background: 'rgba(10,14,26,0.7)', border: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(16px)' }}>
+                        <div key={i} className="relative rounded-2xl p-6 group hover:-translate-y-0.5 transition-all duration-150 overflow-hidden bg-card border border-border shadow-sm">
                             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" style={{ background: `radial-gradient(circle at 80% 20%, ${stat.color}08 0%, transparent 60%)` }} />
                             <div className="flex items-center justify-between mb-5">
                                 <span className="text-xs font-bold text-muted-foreground uppercase tracking-[0.1em]">{stat.label}</span>
@@ -120,8 +119,8 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                 {/* Performance Chart */}
-                <div className="col-span-1 lg:col-span-2 rounded-2xl overflow-hidden" style={{ background: 'rgba(10,14,26,0.7)', border: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(16px)' }}>
-                    <div className="px-6 py-5 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                <div className="col-span-1 lg:col-span-2 rounded-2xl overflow-hidden bg-card border border-border shadow-sm">
+                    <div className="px-6 py-5 border-b border-border">
                         <h2 className="font-heading text-base font-bold tracking-tight">Performance Trend</h2>
                     </div>
                     <div className="h-[280px] flex items-end justify-between px-6 pb-6 pt-4 gap-1.5 relative overflow-hidden">
@@ -142,8 +141,8 @@ export default function DashboardPage() {
                 </div>
 
                 {/* History List */}
-                <div className="col-span-1 rounded-2xl overflow-hidden" style={{ background: 'rgba(10,14,26,0.7)', border: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(16px)' }}>
-                    <div className="px-6 py-5 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                <div className="col-span-1 rounded-2xl overflow-hidden bg-card border border-border shadow-sm">
+                    <div className="px-6 py-5 border-b border-border">
                         <h2 className="font-heading text-base font-bold tracking-tight">Recent Interviews</h2>
                     </div>
                     <div className="p-4 space-y-2">
@@ -157,11 +156,10 @@ export default function DashboardPage() {
                                         localStorage.setItem("prepsense_session_id", item.session_id)
                                         router.push("/report")
                                     }}
-                                    className="flex items-center justify-between p-3 rounded-xl transition-all duration-150 cursor-pointer group hover:-translate-y-px"
-                                    style={{ border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}
+                                    className="flex items-center justify-between p-3 rounded-xl transition-all duration-150 cursor-pointer group hover:-translate-y-px bg-muted/50 border border-border hover:border-primary/30"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                        <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-muted border border-border">
                                             <Calendar className="w-4 h-4 text-muted-foreground" />
                                         </div>
                                         <div>

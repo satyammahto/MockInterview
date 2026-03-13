@@ -22,38 +22,66 @@ router = APIRouter(prefix="/sessions", tags=["Sessions"])
 
 @router.post("/start")
 async def start_session(
-    resume: UploadFile = File(...),
-    job_description: str = Form(...),
+    job_description: str = Form(""),
+    manual_skills: str = Form(""),
+    role: str = Form(""),
+    experience: str = Form(""),
+    persona: str = Form(""),
     difficulty: str = Form("medium"),
     num_questions: int = Form(5),
+    resume: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
 ):
     """
-    1. Validate & save uploaded resume file
-    2. Run PyResparser to extract skills
-    3. Call Groq Llama3 to generate questions
-    4. Save session + questions to MySQL
-    5. Return session_id and questions to frontend
+    1. Validate & save uploaded resume file if present
+    2. Run PyResparser to extract skills if resume present
+    3. Combine with manual skills 
+    4. Call Groq Llama3 to generate questions
+    5. Save session + questions to MySQL
+    6. Return session_id and questions to frontend
     """
-    # Validate file type
-    allowed_types = {"application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
-    if resume.content_type not in allowed_types and not resume.filename.endswith((".pdf", ".docx", ".doc")):
-        raise HTTPException(status_code=400, detail="Only PDF and DOCX resumes are accepted.")
+    skills = []
+    safe_filename = "manual_entry"
 
-    # Read file bytes
-    file_bytes = await resume.read()
-    if len(file_bytes) > 5 * 1024 * 1024:  # 5 MB limit
-        raise HTTPException(status_code=400, detail="File size must be under 5 MB.")
+    if resume and resume.filename:
+        # Validate file type
+        allowed_types = {"application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
+        if resume.content_type not in allowed_types and not resume.filename.endswith((".pdf", ".docx", ".doc")):
+            raise HTTPException(status_code=400, detail="Only PDF and DOCX resumes are accepted.")
 
-    # Save resume to uploads dir
-    os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
-    safe_filename = f"{uuid.uuid4()}_{resume.filename}"
-    save_path = os.path.join(settings.UPLOAD_DIR, safe_filename)
-    with open(save_path, "wb") as f:
-        f.write(file_bytes)
+        # Read file bytes
+        file_bytes = await resume.read()
+        if len(file_bytes) > 5 * 1024 * 1024:  # 5 MB limit
+            raise HTTPException(status_code=400, detail="File size must be under 5 MB.")
 
-    # Extract skills
-    skills = extract_skills(file_bytes, resume.filename)
+        # Save resume to uploads dir
+        os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+        safe_filename = f"{uuid.uuid4()}_{resume.filename}"
+        save_path = os.path.join(settings.UPLOAD_DIR, safe_filename)
+        with open(save_path, "wb") as f:
+            f.write(file_bytes)
+
+        # Extract skills
+        resume_skills = extract_skills(file_bytes, resume.filename)
+        if isinstance(resume_skills, list):
+             skills.extend(resume_skills)
+
+    # Add manual skills, role, and experience to the skills list
+    manual_combined = []
+    if manual_skills:
+        manual_combined.append(f"Key Skills: {manual_skills}")
+    if role:
+        manual_combined.append(f"Target Role: {role}")
+    if experience:
+        manual_combined.append(f"Experience Level: {experience}")
+    if persona:
+        manual_combined.append(f"Interviewer Persona: {persona}")
+    
+    if manual_combined:
+        skills.insert(0, " | ".join(manual_combined))
+
+    if not skills:
+        raise HTTPException(status_code=400, detail="Please provide either a resume or manual skills.")
 
     # Generate questions via Groq
     questions_data = generate_questions(
