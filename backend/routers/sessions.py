@@ -26,6 +26,8 @@ async def start_session(
     job_description: str = Form(...),
     difficulty: str = Form("medium"),
     num_questions: int = Form(5),
+    interview_mode: str = Form("mixed"),
+    role: str = Form(""),
     db: Session = Depends(get_db),
 ):
     """
@@ -55,12 +57,19 @@ async def start_session(
     # Extract skills
     skills = extract_skills(file_bytes, resume.filename)
 
-    # Generate questions via Groq
+    # Validate interview_mode
+    valid_modes = {"hr", "technical", "behavioral", "stress", "mixed"}
+    if interview_mode.lower() not in valid_modes:
+        interview_mode = "mixed"
+
+    # Generate questions via Groq (mode-aware)
     questions_data = generate_questions(
         skills=skills,
         job_description=job_description,
         difficulty=difficulty,
         num_questions=num_questions,
+        role=role,
+        interview_mode=interview_mode,
     )
 
     # Create session in DB
@@ -71,6 +80,7 @@ async def start_session(
         resume_filename=safe_filename,
         skills_extracted=skills,
         difficulty=difficulty,
+        interview_mode=interview_mode.lower(),
         num_questions=str(num_questions),
         status="in_progress",
     )
@@ -114,6 +124,7 @@ def get_session(session_id: str, db: Session = Depends(get_db)):
         "session_id": session.id,
         "status": session.status,
         "difficulty": session.difficulty,
+        "interview_mode": session.interview_mode,
         "skills_extracted": session.skills_extracted,
         "overall_score": session.overall_score,
         "created_at": session.created_at,

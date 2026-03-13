@@ -23,6 +23,26 @@ interface ReportData {
     strengths: string[]
     improvements: string[]
     coaching_tips: string[]
+    // Confidence Analysis (Feature 2)
+    confidence_analysis?: {
+        confidence_score: number
+        filler_word_count: number
+        pace_wpm: number
+        top_filler_words: { word: string; count: number }[]
+        issues: string[]
+    }
+    // STAR Evaluation (Feature 3)
+    star_evaluation?: {
+        star_score: number
+        per_question: {
+            situation: boolean
+            task: boolean
+            action: boolean
+            result: boolean
+            star_score: number
+            missing_components: string[]
+        }[]
+    }
 }
 
 interface AnswerData {
@@ -190,16 +210,97 @@ export default function ReportPage() {
                     transition={{ duration: 0.5, delay: 0.2 }}
                 >
                     <VoiceAnalysis 
-                        wpm={avgPace}
-                        totalFillerWords={fillerWords}
-                        pauseCount={4} // Mock data for now since backend doesn't return this yet
-                        fillerWords={[
-                            { word: "um", count: Math.max(1, Math.floor(fillerWords * 0.4)) },
-                            { word: "like", count: Math.max(1, Math.floor(fillerWords * 0.3)) },
-                            { word: "you know", count: Math.max(0, Math.floor(fillerWords * 0.2)) },
-                            { word: "basically", count: Math.max(0, Math.floor(fillerWords * 0.1)) }
-                        ]}
+                        wpm={report?.confidence_analysis?.pace_wpm ?? avgPace}
+                        totalFillerWords={report?.confidence_analysis?.filler_word_count ?? fillerWords}
+                        pauseCount={4}
+                        fillerWords={
+                            report?.confidence_analysis?.top_filler_words?.length
+                                ? report.confidence_analysis.top_filler_words
+                                : [
+                                    { word: "um", count: Math.max(1, Math.floor(fillerWords * 0.4)) },
+                                    { word: "like", count: Math.max(1, Math.floor(fillerWords * 0.3)) },
+                                    { word: "you know", count: Math.max(0, Math.floor(fillerWords * 0.2)) },
+                                    { word: "basically", count: Math.max(0, Math.floor(fillerWords * 0.1)) }
+                                ]
+                        }
                     />
+
+                    {/* ── Confidence Analysis ── */}
+                    <div className="rounded-[20px] p-7 mt-6" style={{ background: '#0E1220', border: '1px solid #1E2535' }}>
+                        <h3 className="font-heading text-[20px] font-extrabold mb-5 flex items-center gap-2">
+                            🧠 Confidence Analysis
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+                            <div className="rounded-[14px] p-5" style={{ background: '#080B14', border: '1px solid #1E2535' }}>
+                                <div className="text-[11px] font-semibold uppercase tracking-[1px] mb-1" style={{ color: '#4A5568' }}>Confidence Score</div>
+                                <div className="font-heading text-[36px] font-extrabold" style={{ color: (report?.confidence_analysis?.confidence_score ?? confidence) >= 70 ? '#4EFFA3' : (report?.confidence_analysis?.confidence_score ?? confidence) >= 50 ? '#FFD166' : '#FF6B6B' }}>
+                                    {report?.confidence_analysis?.confidence_score ?? Math.round(confidence * 10)}
+                                    <span className="text-[16px] font-medium" style={{ color: '#4A5568' }}> / 100</span>
+                                </div>
+                            </div>
+                            <div className="rounded-[14px] p-5" style={{ background: '#080B14', border: '1px solid #1E2535' }}>
+                                <div className="text-[11px] font-semibold uppercase tracking-[1px] mb-1" style={{ color: '#4A5568' }}>Filler Words</div>
+                                <div className="font-heading text-[36px] font-extrabold" style={{ color: (report?.confidence_analysis?.filler_word_count ?? fillerWords) <= 5 ? '#4EFFA3' : '#FF6B6B' }}>
+                                    {report?.confidence_analysis?.filler_word_count ?? fillerWords}
+                                </div>
+                            </div>
+                            <div className="rounded-[14px] p-5" style={{ background: '#080B14', border: '1px solid #1E2535' }}>
+                                <div className="text-[11px] font-semibold uppercase tracking-[1px] mb-1" style={{ color: '#4A5568' }}>Speaking Pace</div>
+                                <div className="font-heading text-[36px] font-extrabold" style={{ color: '#7B61FF' }}>
+                                    {report?.confidence_analysis?.pace_wpm ?? avgPace}
+                                    <span className="text-[14px] font-medium" style={{ color: '#4A5568' }}> WPM</span>
+                                </div>
+                            </div>
+                        </div>
+                        {(report?.confidence_analysis?.issues?.length ?? 0) > 0 && (
+                            <div className="space-y-2">
+                                {report?.confidence_analysis?.issues?.map((issue, i) => (
+                                    <div key={i} className="flex items-start gap-2 text-sm rounded-xl px-4 py-3" style={{ background: 'rgba(255,107,107,0.06)', border: '1px solid rgba(255,107,107,0.15)', color: '#FF6B6B' }}>
+                                        <span>⚠️</span>
+                                        <span>{issue}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* ── STAR Evaluation ── */}
+                    {report?.star_evaluation && (
+                        <div className="rounded-[20px] p-7 mt-6" style={{ background: '#0E1220', border: '1px solid #1E2535' }}>
+                            <h3 className="font-heading text-[20px] font-extrabold mb-2 flex items-center gap-2">
+                                ⭐ STAR Method Evaluation
+                            </h3>
+                            <p className="text-[13px] mb-5" style={{ color: '#8892A4' }}>
+                                Overall STAR Score: <span className="font-bold" style={{ color: report.star_evaluation.star_score >= 70 ? '#4EFFA3' : report.star_evaluation.star_score >= 40 ? '#FFD166' : '#FF6B6B' }}>{report.star_evaluation.star_score}/100</span>
+                            </p>
+                            <div className="space-y-3">
+                                {report.star_evaluation.per_question?.map((star, i) => (
+                                    <div key={i} className="rounded-[14px] p-4" style={{ background: '#080B14', border: '1px solid #1E2535' }}>
+                                        <div className="text-[11px] font-semibold uppercase tracking-[1px] mb-3" style={{ color: '#4A5568' }}>
+                                            Question {i + 1} · STAR Score: {star.star_score}/100
+                                        </div>
+                                        <div className="flex flex-wrap gap-3">
+                                            {(["situation", "task", "action", "result"] as const).map((comp) => (
+                                                <div key={comp} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-bold uppercase tracking-[0.5px]"
+                                                    style={star[comp]
+                                                        ? { background: 'rgba(78,255,163,0.1)', border: '1px solid rgba(78,255,163,0.25)', color: '#4EFFA3' }
+                                                        : { background: 'rgba(255,107,107,0.1)', border: '1px solid rgba(255,107,107,0.25)', color: '#FF6B6B' }
+                                                    }
+                                                >
+                                                    {star[comp] ? '✔' : '✘'} {comp}
+                                                </div>
+                                            ))}
+                                        </div>
+                                        {star.missing_components?.length > 0 && (
+                                            <p className="text-[12px] mt-2" style={{ color: '#8892A4' }}>
+                                                Missing: {star.missing_components.join(", ")}
+                                            </p>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </motion.div>
 
                 {/* ── Q&A Breakdown ── */}

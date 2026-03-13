@@ -9,7 +9,13 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 
 const roles = ["Software Engineer", "Data Analyst", "Product Manager", "DevOps Engineer", "Data Scientist", "Marketing", "Finance / CA", "Other"]
 const expLevels = ["Fresher", "1–3 Years", "3–6 Years", "6+ Years"]
-const interviewTypes = ["Mixed (HR + Tech)", "Technical Only", "HR / Behavioral", "System Design", "Case Study"]
+const interviewTypes = [
+    { label: "Mixed (HR + Tech)", value: "mixed" },
+    { label: "Technical Only", value: "technical" },
+    { label: "HR / Behavioral", value: "hr" },
+    { label: "Behavioral (STAR)", value: "behavioral" },
+    { label: "Stress Interview", value: "stress" },
+]
 const personas = ["🤝 Friendly Senior", "🔍 The Skeptic", "😐 The Silent Type", "👥 Panel (3 people)", "⚡ Speed Round"]
 const difficulties = [
     { label: "😌 Easy", value: "easy", class: "easy" },
@@ -24,7 +30,7 @@ export default function UploadPage() {
     const [skills, setSkills] = useState("")
     const [selectedRole, setSelectedRole] = useState("Software Engineer")
     const [experience, setExperience] = useState("Fresher")
-    const [interviewType, setInterviewType] = useState("Mixed (HR + Tech)")
+    const [interviewType, setInterviewType] = useState(interviewTypes[0])
     const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("easy")
     const [persona, setPersona] = useState("🤝 Friendly Senior")
     const [isLoading, setIsLoading] = useState(false)
@@ -44,8 +50,7 @@ export default function UploadPage() {
             formData.append("difficulty", difficulty)
             formData.append("num_questions", "10")
             formData.append("role", selectedRole)
-            formData.append("experience", experience)
-            formData.append("persona", persona)
+            formData.append("interview_mode", interviewType.value)
 
             const res = await fetch(`${API_BASE}/sessions/start`, { method: "POST", body: formData })
             if (!res.ok) { const err = await res.json(); throw new Error(err.detail || "Failed") }
@@ -232,7 +237,7 @@ export default function UploadPage() {
                 <div className="mb-7">
                     <label className="block text-[13px] font-semibold uppercase tracking-[0.5px] mb-2.5" style={{ color: '#8892A4' }}>Interview Type</label>
                     <div className="flex flex-wrap gap-2.5">
-                        {interviewTypes.map((t) => <Tag key={t} label={t} selected={interviewType === t} onClick={() => setInterviewType(t)} />)}
+                        {interviewTypes.map((t) => <Tag key={t.value} label={t.label} selected={interviewType.value === t.value} onClick={() => setInterviewType(t)} />)}
                     </div>
                 </div>
 
