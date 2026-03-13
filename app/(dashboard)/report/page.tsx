@@ -1,37 +1,102 @@
 "use client"
 
 import { Card, CardContent } from "@/components/ui/card"
-import { CheckCircle2, AlertTriangle, Lightbulb, ChevronDown } from "lucide-react"
-import { useState } from "react"
+import { CheckCircle2, AlertTriangle, Lightbulb, ChevronDown, Loader2 } from "lucide-react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+
+interface FeedbackItem {
+    question_id: number
+    question_text: string
+    question_type: string
+    score: number
+    your_answer: string
+    ideal_answer: string
+    tips: string[]
+}
+
+interface Report {
+    overall_score: number
+    metrics: {
+        confidence: number
+        clarity: number
+        relevance: number
+        pacing: number
+    }
+    feedback: FeedbackItem[]
+    strengths: string[]
+    improvements: string[]
+    advice: string[]
+    summary_message: string
+}
+
 export default function ReportPage() {
+    const router = useRouter()
     const [expandedQ, setExpandedQ] = useState<number | null>(0)
+    const [report, setReport] = useState<Report | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
+    const [error, setError] = useState("")
+
+    // Fetch report from API on mount
+    useEffect(() => {
+        const sessionId = localStorage.getItem("prepsense_session_id")
+        if (!sessionId) {
+            router.replace("/upload")
+            return
+        }
+        fetchReport(sessionId)
+    }, [router])
+
+    const fetchReport = async (sessionId: string) => {
+        try {
+            const res = await fetch(`${API_BASE}/sessions/${sessionId}/report`)
+            if (!res.ok) {
+                if (res.status === 404) {
+                    throw new Error("Report not ready yet. Please complete the interview first.")
+                }
+                throw new Error("Failed to load report.")
+            }
+            const data: Report = await res.json()
+            setReport(data)
+        } catch (err: any) {
+            setError(err.message || "Could not load report.")
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    if (isLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+                <Loader2 className="w-10 h-10 animate-spin text-accent" />
+                <p className="text-muted-foreground text-sm font-medium">Generating your AI feedback report...</p>
+            </div>
+        )
+    }
+
+    if (error || !report) {
+        return (
+            <div className="max-w-xl mx-auto text-center space-y-6 py-20">
+                <div className="text-destructive bg-destructive/10 border border-destructive/20 rounded-2xl p-6">
+                    <p className="font-bold mb-2">Report Unavailable</p>
+                    <p className="text-sm text-muted-foreground">{error}</p>
+                </div>
+                <button onClick={() => router.push("/upload")}
+                    className="px-6 py-3 bg-accent text-black font-bold rounded-xl hover:bg-accent/90 transition-all">
+                    Start New Interview
+                </button>
+            </div>
+        )
+    }
 
     const scores = [
-        { label: "Confidence", score: 88, color: "var(--accent-1)" },
-        { label: "Clarity", score: 72, color: "var(--accent-4)" },
-        { label: "Relevance", score: 95, color: "var(--accent-1)" },
-        { label: "Pacing", score: 65, color: "var(--accent-3)" },
-    ]
-
-    const feedback = [
-        {
-            q: "Tell me about a time you had to optimize a React Native application.",
-            score: 85,
-            tag: "good",
-            yours: "I used React.memo on a few list items and it seemed to help the frame rate go up according to the React dev tools.",
-            ideal: "I profiled the application using React DevTools and identified unnecessary re-renders in a FlatList. By implementing React.memo with a custom comparison function for list items and extracting inline functions, I improved scrolling performance from 40fps to a stable 60fps.",
-            tips: ["Quantify your results with specific metrics (e.g., 40fps to 60fps)", "Mention specific tools (React DevTools)"]
-        },
-        {
-            q: "How do you handle disagreements with product managers?",
-            score: 60,
-            tag: "improve",
-            yours: "Usually I just argue my case until they agree or we compromise.",
-            ideal: "I approach disagreements as an opportunity for alignment. I ask for the data driving their decision, present technical constraints clearly, and try to find a solution that satisfies both user needs and technical viability.",
-            tips: ["Avoid confrontational language ('argue')", "Focus on collaboration and data-driven decisions"]
-        }
+        { label: "Confidence", score: report.metrics.confidence, color: "var(--accent-1)" },
+        { label: "Clarity", score: report.metrics.clarity, color: "var(--accent-4)" },
+        { label: "Relevance", score: report.metrics.relevance, color: "var(--accent-1)" },
+        { label: "Pacing", score: report.metrics.pacing, color: "var(--accent-3)" },
     ]
 
     return (
@@ -45,7 +110,7 @@ export default function ReportPage() {
                     <div className="text-accent font-bold tracking-[3px] uppercase text-xs mb-2">Analysis Complete</div>
                     <h1 className="font-heading text-4xl font-extrabold tracking-tight mb-4">Interview Report</h1>
                     <p className="text-muted-foreground max-w-md text-sm leading-relaxed">
-                        Great effort! Your technical knowledge is solid, but there is room for improvement in behavioral structuring (STAR method) and pacing.
+                        {report.summary_message}
                     </p>
                 </div>
 
@@ -56,12 +121,12 @@ export default function ReportPage() {
                         <circle
                             cx="80" cy="80" r="70"
                             stroke="var(--accent-1)" strokeWidth="8" fill="none"
-                            strokeDasharray="440" strokeDashoffset={440 - (440 * 78) / 100}
+                            strokeDasharray="440" strokeDashoffset={440 - (440 * report.overall_score) / 100}
                             className="transition-all duration-1000 ease-out drop-shadow-[0_0_8px_var(--accent-1)]"
                         />
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="font-heading text-5xl font-extrabold">78</span>
+                        <span className="font-heading text-5xl font-extrabold">{Math.round(report.overall_score)}</span>
                         <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">/ 100</span>
                     </div>
                 </div>
@@ -97,7 +162,7 @@ export default function ReportPage() {
                 </h2>
 
                 <div className="space-y-4">
-                    {feedback.map((item, i) => (
+                    {report.feedback.map((item, i) => (
                         <div
                             key={i}
                             className={cn(
@@ -114,11 +179,11 @@ export default function ReportPage() {
                                     item.score >= 80 ? "bg-accent/10 text-accent border border-accent/20" :
                                         "bg-destructive/10 text-destructive border border-destructive/20"
                                 )}>
-                                    {item.score}/100
+                                    {Math.round(item.score)}/100
                                 </div>
 
                                 <div className="flex-1">
-                                    <h3 className="font-semibold text-foreground pr-8">{item.q}</h3>
+                                    <h3 className="font-semibold text-foreground pr-8">{item.question_text}</h3>
                                 </div>
 
                                 <ChevronDown className={cn("w-5 h-5 text-muted-foreground transition-transform duration-300 shrink-0", expandedQ === i && "rotate-180")} />
@@ -137,7 +202,7 @@ export default function ReportPage() {
                                                 <AlertTriangle className="w-3.5 h-3.5" /> Your Answer
                                             </div>
                                             <p className="text-sm text-foreground/80 leading-relaxed font-body">
-                                                &quot;{item.yours}&quot;
+                                                {item.your_answer ? `"${item.your_answer}"` : <em className="text-muted-foreground">No answer recorded</em>}
                                             </p>
                                         </div>
 
@@ -147,30 +212,78 @@ export default function ReportPage() {
                                                 <CheckCircle2 className="w-3.5 h-3.5" /> Ideal Answer Structure
                                             </div>
                                             <p className="text-sm text-foreground/80 leading-relaxed font-body">
-                                                &quot;{item.ideal}&quot;
+                                                &quot;{item.ideal_answer}&quot;
                                             </p>
                                         </div>
                                     </div>
 
                                     {/* Tips list */}
-                                    <div className="mt-4 bg-muted/40 rounded-xl p-4 flex gap-3 items-start border border-border/50">
-                                        <Lightbulb className="w-5 h-5 text-[var(--accent-4)] shrink-0 mt-0.5" />
-                                        <div>
-                                            <div className="text-xs font-bold text-foreground mb-2 uppercase tracking-wide">AI Recommendations</div>
-                                            <ul className="space-y-1.5">
-                                                {item.tips.map((tip, idx) => (
-                                                    <li key={idx} className="text-sm text-muted-foreground flex items-center gap-2">
-                                                        <span className="w-1 h-1 rounded-full bg-border" /> {tip}
-                                                    </li>
-                                                ))}
-                                            </ul>
+                                    {item.tips && item.tips.length > 0 && (
+                                        <div className="mt-4 bg-muted/40 rounded-xl p-4 flex gap-3 items-start border border-border/50">
+                                            <Lightbulb className="w-5 h-5 text-[var(--accent-4)] shrink-0 mt-0.5" />
+                                            <div>
+                                                <div className="text-xs font-bold text-foreground mb-2 uppercase tracking-wide">AI Recommendations</div>
+                                                <ul className="space-y-1.5">
+                                                    {item.tips.map((tip, idx) => (
+                                                        <li key={idx} className="text-sm text-muted-foreground flex items-center gap-2">
+                                                            <span className="w-1 h-1 rounded-full bg-border" /> {tip}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
                     ))}
                 </div>
+            </div>
+
+            {/* Strengths / Improvements */}
+            {(report.strengths?.length > 0 || report.improvements?.length > 0) && (
+                <div className="grid md:grid-cols-2 gap-6">
+                    {report.strengths?.length > 0 && (
+                        <div className="bg-accent/5 border border-accent/15 rounded-2xl p-6">
+                            <h3 className="font-heading text-base font-bold text-accent mb-4">✅ Strengths</h3>
+                            <ul className="space-y-2">
+                                {report.strengths.map((s, i) => (
+                                    <li key={i} className="text-sm text-foreground/80 flex items-start gap-2">
+                                        <span className="text-accent mt-1">→</span> {s}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                    {report.improvements?.length > 0 && (
+                        <div className="bg-destructive/5 border border-destructive/15 rounded-2xl p-6">
+                            <h3 className="font-heading text-base font-bold text-destructive mb-4">📈 Areas to Improve</h3>
+                            <ul className="space-y-2">
+                                {report.improvements.map((s, i) => (
+                                    <li key={i} className="text-sm text-foreground/80 flex items-start gap-2">
+                                        <span className="text-destructive mt-1">→</span> {s}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex flex-wrap gap-4 justify-center pt-4">
+                <button
+                    onClick={() => { localStorage.clear(); router.push("/upload") }}
+                    className="px-8 py-3 rounded-xl font-heading font-bold bg-accent text-black hover:bg-accent/90 transition-all hover:-translate-y-0.5 shadow-[0_4px_14px_rgba(78,255,163,0.25)]"
+                >
+                    Start New Interview
+                </button>
+                <button
+                    onClick={() => router.push("/dashboard")}
+                    className="px-8 py-3 rounded-xl font-heading font-semibold border border-border hover:bg-surface transition-all"
+                >
+                    View Dashboard
+                </button>
             </div>
         </div>
     )
