@@ -65,8 +65,8 @@ export default function UploadPage() {
             localStorage.setItem("prepsense_skills", JSON.stringify(data.skills_extracted))
 
             router.push("/interview")
-        } catch (err: any) {
-            setError(err.message || "Something went wrong. Please try again.")
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : "Something went wrong. Please try again.")
         } finally {
             setIsLoading(false)
         }
@@ -104,8 +104,9 @@ export default function UploadPage() {
                                 const input = document.createElement("input")
                                 input.type = "file"
                                 input.accept = ".pdf,.doc,.docx"
-                                input.onchange = (e: any) => {
-                                    if (e.target.files?.length) setFile(e.target.files[0])
+                                input.onchange = (e: Event) => {
+                                    const target = e.target as HTMLInputElement
+                                    if (target.files?.length) setFile(target.files[0])
                                 }
                                 input.click()
                             }}
