@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Home, Mic, FileText, BarChart2, Settings } from "lucide-react"
+import { Home, FileText, BarChart2, Settings, Mic } from "lucide-react"
 
 export function Sidebar() {
     const navItems = [
