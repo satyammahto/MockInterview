@@ -25,9 +25,20 @@ async def text_to_speech(body: TTSRequest):
     if len(body.text) > 1000:
         raise HTTPException(status_code=400, detail="Text is too long (max 1000 characters).")
 
-    audio_bytes = synthesize_speech(body.text.strip())
+    try:
+        audio_bytes = synthesize_speech(body.text.strip())
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"[TTS] Synthesis error: {e}")
+        audio_bytes = b""
 
     if not audio_bytes:
-        raise HTTPException(status_code=500, detail="TTS synthesis failed.")
+        # Return 200 with an empty body + custom header so the frontend knows to
+        # fall back to window.speechSynthesis — never block interview flow.
+        return Response(
+            content=b"",
+            media_type="audio/wav",
+            headers={"X-TTS-Fallback": "true"},
+        )
 
     return Response(content=audio_bytes, media_type="audio/wav")

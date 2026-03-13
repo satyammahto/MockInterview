@@ -35,7 +35,7 @@ def get_settings() -> Settings:
     return Settings(
         DATABASE_URL=config("DATABASE_URL"),
         GROQ_API_KEY=config("GROQ_API_KEY", default=""),
-        GROQ_MODEL=config("GROQ_MODEL", default="llama3-70b-8192"),
+        GROQ_MODEL=config("GROQ_MODEL", default="llama-3.3-70b-versatile"),
         GEMINI_API_KEY=config("GEMINI_API_KEY", default=""),
         GEMINI_MODEL=config("GEMINI_MODEL", default="gemini-1.5-flash"),
         WHISPER_MODEL=config("WHISPER_MODEL", default="base"),

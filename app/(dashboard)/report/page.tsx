@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { Loader2 } from "lucide-react"
+import { Loader2, Upload, FileText, CheckCircle2, ChevronRight, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PageContainer } from "@/components/layout/PageContainer"
 import { SectionHeader } from "@/components/layout/SectionHeader"
@@ -11,16 +11,17 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 
 interface ReportData {
     overall_score: number
-    clarity_score: number
-    confidence_score: number
-    relevance_score: number
-    depth_score: number
-    total_filler_words: number
-    avg_speaking_pace: number
-    answers: AnswerData[]
+    metrics: {
+        clarity: number
+        confidence: number
+        relevance: number
+        pacing: number
+    }
+    feedback: AnswerData[]
     strengths: string[]
     improvements: string[]
-    coaching_tips: string[]
+    advice: string[]
+    summary_message: string
 }
 
 interface AnswerData {
@@ -30,7 +31,7 @@ interface AnswerData {
     your_answer: string
     ideal_answer: string
     score: number
-    feedback: string
+    tips: string[]
 }
 
 const tipCards = [
@@ -50,9 +51,9 @@ const tipClass = (type: string) =>
         : "bg-accent-4/5 border-accent-4/20"
 
 const scoreBadgeClass = (score: number) =>
-    score >= 8
+    score >= 80
         ? "bg-primary/10 border border-primary/30 text-primary"
-        : score >= 6
+        : score >= 60
         ? "bg-accent-4/10 border border-accent-4/30 text-accent-4"
         : "bg-destructive/10 border border-destructive/30 text-destructive"
 
@@ -61,6 +62,13 @@ export default function ReportPage() {
     const [report, setReport] = useState<ReportData | null>(null)
     const [loading, setLoading] = useState(true)
     const [expandedQ, setExpandedQ] = useState<number | null>(0)
+    
+    // Resume Improvement State
+    const [isImproveModalOpen, setIsImproveModalOpen] = useState(false)
+    const [uploadingResume, setUploadingResume] = useState(false)
+    const [resumeSuggestions, setResumeSuggestions] = useState<string[]>([])
+    const [resumeFile, setResumeFile] = useState<File | null>(null)
+    const fileInputRef = useRef<HTMLInputElement>(null)
 
     const fetchReport = useCallback(async (sid: string) => {
         try {
@@ -95,25 +103,24 @@ export default function ReportPage() {
     }
 
     const overall = report?.overall_score ?? 78
-    const clarity = report?.clarity_score ?? 8.1
-    const confidence = report?.confidence_score ?? 6.4
-    const relevance = report?.relevance_score ?? 8.8
-    const depth = report?.depth_score ?? 5.9
-    const fillerWords = report?.total_filler_words ?? 14
-    const avgPace = report?.avg_speaking_pace ?? 118
+    const clarity = report?.metrics?.clarity ?? 81
+    const confidence = report?.metrics?.confidence ?? 64
+    const relevance = report?.metrics?.relevance ?? 88
+    const depth = report?.metrics?.pacing ?? 59
+    const fillerWords = 14 // Handled locally per-question now, we can default or aggregate later
+    const avgPace = report?.metrics?.pacing ?? 118
 
     const scoreMetrics = [
-        { label: "Clarity", val: clarity, colorClass: "text-primary", barClass: "bg-primary", pct: clarity * 10 },
-        { label: "Confidence", val: confidence, colorClass: "text-accent-4", barClass: "bg-accent-4", pct: confidence * 10 },
-        { label: "Relevance", val: relevance, colorClass: "text-primary", barClass: "bg-primary", pct: relevance * 10 },
-        { label: "Depth", val: depth, colorClass: "text-destructive", barClass: "bg-destructive", pct: depth * 10 },
+        { label: "Clarity", val: clarity, colorClass: "text-primary", barClass: "bg-primary", pct: clarity },
+        { label: "Confidence", val: confidence, colorClass: "text-accent-4", barClass: "bg-accent-4", pct: confidence },
+        { label: "Relevance", val: relevance, colorClass: "text-primary", barClass: "bg-primary", pct: relevance },
+        { label: "Depth", val: depth, colorClass: "text-destructive", barClass: "bg-destructive", pct: depth },
     ]
 
     const voiceStats = [
-        { label: 'Total "Umm/Uh" Used', val: `${fillerWords}`, suffix: "times", colorClass: "text-destructive" },
-        { label: "Avg Speaking Pace", val: `${avgPace}`, suffix: "WPM", colorClass: "text-accent-4" },
-        { label: "Longest Silence", val: "8.2s", suffix: "Q7", colorClass: "text-destructive" },
-        { label: "Best Question", val: "Q4", suffix: "9.1/10", colorClass: "text-primary" },
+        { label: 'Estimated Pauses', val: `0`, suffix: "times", colorClass: "text-destructive" },
+        { label: "Pacing Score", val: `${avgPace}`, suffix: "/100", colorClass: "text-accent-4" },
+        { label: "Confidence Score", val: `${confidence}`, suffix: "/100", colorClass: "text-primary" },
     ]
 
     return (
@@ -122,7 +129,7 @@ export default function ReportPage() {
                 <div className="flex-1">
                     <SectionHeader 
                         title="Your Report Card" 
-                        description={`Software Engineer · Mixed · ${report?.answers?.length ?? 10} Questions`}
+                        description={`Software Engineer · Mixed · ${report?.feedback?.length ?? 10} Questions`}
                         className="mb-6"
                     />
                     <div className="flex gap-2 flex-wrap -mt-4">
@@ -135,8 +142,7 @@ export default function ReportPage() {
                         ))}
                     </div>
                 </div>
-
-                <div className="flex items-center gap-8 bg-card border border-border p-6 rounded-2xl shadow-sm self-stretch md:self-auto">
+                <div className="flex items-center gap-8 bg-card border border-border p-6 rounded-2xl shadow-sm self-stretch md:self-auto print:hidden">
                     <div className="flex flex-col items-center gap-2">
                         <div
                             className="w-[100px] h-[100px] rounded-full flex items-center justify-center p-1.5"
@@ -151,11 +157,17 @@ export default function ReportPage() {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <button className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-heading font-bold text-sm bg-primary text-primary-foreground hover:scale-[1.02] transition-all">
+                        <button 
+                            onClick={() => window.print()}
+                            className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-heading font-bold text-sm bg-primary text-primary-foreground hover:scale-[1.02] transition-all"
+                        >
                             Download PDF
                         </button>
-                        <button onClick={() => router.push("/upload")} className="text-[11px] font-bold text-muted-foreground hover:text-foreground transition-colors">
-                            🔄 Retake Interview
+                        <button onClick={() => router.push("/upload")} className="flex items-center gap-2 justify-center px-6 py-2.5 rounded-xl font-heading font-bold text-sm bg-accent-4 text-accent-4-foreground hover:scale-[1.02] transition-all">
+                            📄 Improve Resume
+                        </button>
+                        <button onClick={() => router.push("/")} className="text-[11px] font-bold text-muted-foreground hover:text-foreground transition-colors mt-1">
+                            🔄 Start New Interview
                         </button>
                     </div>
                 </div>
@@ -189,7 +201,7 @@ export default function ReportPage() {
                 {/* ── Q&A Breakdown ── */}
                 <div className="mb-12">
                     <h2 className="font-heading text-[24px] font-extrabold mb-6">Question-by-Question Breakdown</h2>
-                    {(report?.answers ?? DEMO_ANSWERS).map((qa, i) => (
+                    {(report?.feedback ?? DEMO_ANSWERS).map((qa, i) => (
                         <div
                             key={i}
                             className="rounded-[20px] p-7 mb-4 cursor-pointer transition-all duration-200 bg-card border border-border hover:border-primary/30 hover:-translate-y-0.5 shadow-sm"
@@ -203,7 +215,7 @@ export default function ReportPage() {
                                     <div className="text-base font-semibold">{qa.question_text}</div>
                                 </div>
                                 <div className={cn("px-3.5 py-1 rounded-full text-[13px] font-bold whitespace-nowrap", scoreBadgeClass(qa.score))}>
-                                    {qa.score.toFixed(1)} / 10
+                                    {qa.score.toFixed(1)} / 100
                                 </div>
                             </div>
 
@@ -219,9 +231,12 @@ export default function ReportPage() {
                                             <p className="text-muted-foreground">{qa.ideal_answer}</p>
                                         </div>
                                     </div>
-                                    {qa.feedback && (
+                                    {qa.tips && qa.tips.length > 0 && (
                                         <div className="mt-4 rounded-[10px] px-4 py-3.5 text-[13px] leading-[1.6] bg-accent-4/5 border border-accent-4/20 text-muted-foreground">
-                                            <strong className="text-accent-4">💡 What to improve:</strong> {qa.feedback}
+                                            <strong className="text-accent-4">💡 What to improve:</strong> 
+                                            <ul className="list-disc pl-5 mt-1">
+                                                {qa.tips.map((tip, idx) => <li key={idx}>{tip}</li>)}
+                                            </ul>
                                         </div>
                                     )}
                                 </>
@@ -268,7 +283,7 @@ export default function ReportPage() {
 }
 
 const DEMO_ANSWERS: AnswerData[] = [
-    { question_id: 1, question_text: "You built a payment gateway — describe a specific technical failure and how you resolved it.", question_type: "Behavioral", your_answer: "So we had this issue where webhook events were coming out of order causing duplicate charges. I implemented idempotency keys... um... it took about 2 weeks to fully fix.", ideal_answer: "Situation: 'We processed 10K+ daily transactions when we noticed a 0.3% duplicate charge rate...' Action: 'I designed an idempotency layer using Redis with TTL...' Result: 'Reduced duplicate charges to zero within 48 hours.'", score: 6.8, feedback: "Good technical content but missing quantification. Add specific numbers (error rate, users affected, time to fix). Lead with the impact first, then explain the solution." },
-    { question_id: 2, question_text: "Design a URL shortener like bit.ly. Walk through your approach.", question_type: "Technical", your_answer: "I'd use a hash function to generate short codes, store them in a database with the mapping, use Redis cache for frequent lookups...", ideal_answer: "Cover: Functional requirements → API design → Hash generation (base62 encoding) → DB schema → Caching layer → Scalability considerations.", score: 9.1, feedback: "" },
-    { question_id: 3, question_text: "What's your biggest weakness?", question_type: "HR", your_answer: "Um... I think... I sometimes work too hard? I'm kind of a perfectionist... [8 second pause] ...yeah, I guess that's my weakness.", ideal_answer: "Real weakness: 'I used to struggle with delegating — I'd rewrite teammates' code...' What you did: 'I started doing code reviews instead...' Growth: 'Now my team's velocity improved 30%.'", score: 4.2, feedback: "'Perfectionist' is the most overused interview answer and raises red flags. Pick a real, minor weakness and show how you actively fixed it." },
+    { question_id: 1, question_text: "You built a payment gateway — describe a specific technical failure and how you resolved it.", question_type: "Behavioral", your_answer: "So we had this issue where webhook events were coming out of order causing duplicate charges. I implemented idempotency keys... um... it took about 2 weeks to fully fix.", ideal_answer: "Situation: 'We processed 10K+ daily transactions when we noticed a 0.3% duplicate charge rate...' Action: 'I designed an idempotency layer using Redis with TTL...' Result: 'Reduced duplicate charges to zero within 48 hours.'", score: 68, tips: ["Good technical content but missing quantification. Add specific numbers (error rate, users affected, time to fix). Lead with the impact first, then explain the solution."] },
+    { question_id: 2, question_text: "Design a URL shortener like bit.ly. Walk through your approach.", question_type: "Technical", your_answer: "I'd use a hash function to generate short codes, store them in a database with the mapping, use Redis cache for frequent lookups...", ideal_answer: "Cover: Functional requirements → API design → Hash generation (base62 encoding) → DB schema → Caching layer → Scalability considerations.", score: 91, tips: [] },
+    { question_id: 3, question_text: "What's your biggest weakness?", question_type: "HR", your_answer: "Um... I think... I sometimes work too hard? I'm kind of a perfectionist... [8 second pause] ...yeah, I guess that's my weakness.", ideal_answer: "Real weakness: 'I used to struggle with delegating — I'd rewrite teammates' code...' What you did: 'I started doing code reviews instead...' Growth: 'Now my team's velocity improved 30%.'", score: 42, tips: ["'Perfectionist' is the most overused interview answer and raises red flags. Pick a real, minor weakness and show how you actively fixed it."] },
 ]
