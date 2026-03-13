@@ -2,34 +2,50 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
-import { Button } from "./ui/button"
+
+const navLinks = [
+    { name: "Home", href: "/" },
+    { name: "Start Mock", href: "/upload" },
+    { name: "Interview", href: "/interview" },
+    { name: "Report", href: "/report" },
+    { name: "Architecture", href: "/architecture" },
+]
 
 export default function Navbar() {
     const pathname = usePathname()
 
-    const links = [
-        { name: "Features", href: "/#features" },
-        { name: "Dashboard", href: "/dashboard" },
-        { name: "Practice", href: "/upload" },
-    ]
-
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 py-4 bg-background/85 backdrop-blur-xl border-b border-border">
-            <Link href="/" className="font-heading text-xl md:text-2xl font-extrabold text-foreground flex items-center gap-2 group">
-                <div className="w-2.5 h-2.5 rounded-full bg-accent shadow-[0_0_12px_var(--accent-1)] group-hover:scale-110 transition-transform duration-300 animate-pulse" />
-                PrepSense
+        <nav
+            className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 h-[68px]"
+            style={{
+                background: 'rgba(8, 11, 20, 0.85)',
+                backdropFilter: 'blur(20px)',
+                borderBottom: '1px solid #1E2535',
+            }}
+        >
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2.5 select-none">
+                <div
+                    className="w-2.5 h-2.5 rounded-full animate-pulse-dot"
+                    style={{ background: '#4EFFA3', boxShadow: '0 0 12px #4EFFA3' }}
+                />
+                <span className="font-heading text-xl font-extrabold text-foreground tracking-tight">
+                    PrepSense
+                </span>
             </Link>
 
+            {/* Nav Links */}
             <div className="hidden md:flex items-center gap-8">
-                {links.map((link) => (
+                {navLinks.map((link) => (
                     <Link
                         key={link.name}
                         href={link.href}
                         className={cn(
-                            "text-sm font-medium transition-colors hover:text-foreground",
-                            pathname === link.href ? "text-foreground" : "text-muted-foreground"
+                            "text-sm font-medium transition-colors duration-200",
+                            pathname === link.href
+                                ? "text-foreground"
+                                : "text-muted-foreground hover:text-foreground"
                         )}
                     >
                         {link.name}
@@ -37,14 +53,23 @@ export default function Navbar() {
                 ))}
             </div>
 
-            <div className="flex items-center gap-4">
-                <Button variant="outline" className="hidden sm:inline-flex font-heading font-semibold border-border hover:bg-surface">
-                    Sign In
-                </Button>
-                <Button className="font-heading font-bold bg-accent text-black hover:bg-accent/90 hover:-translate-y-0.5 transition-transform hover:shadow-[0_8px_24px_rgba(78,255,163,0.3)]">
-                    Get Started
-                </Button>
-            </div>
+            {/* CTA */}
+            <Link
+                href="/upload"
+                className="font-heading font-bold text-sm text-black px-6 py-2.5 rounded-lg transition-all duration-200 hover:-translate-y-px"
+                style={{
+                    background: '#4EFFA3',
+                    boxShadow: '0 0 0 0 transparent',
+                }}
+                onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 8px 24px rgba(78,255,163,0.3)'
+                }}
+                onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 0 0 0 transparent'
+                }}
+            >
+                Start Free Mock →
+            </Link>
         </nav>
     )
 }

@@ -1,152 +1,193 @@
+"use client"
+
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ArrowRight, Mic, ChartBar, FileText, BrainCircuit, Activity, Code2 } from "lucide-react"
+import { ArrowRight, FileText, Mic, Brain, BarChart3, Users, BookOpen } from "lucide-react"
+
+const features = [
+    {
+        icon: FileText,
+        title: "Resume Intelligence",
+        description: "AI parses your resume and generates questions from your exact projects, skills, and experience gaps. Not generic — hyper-personalized.",
+        iconBg: "rgba(78,255,163,0.1)",
+        color: "#4EFFA3",
+    },
+    {
+        icon: Mic,
+        title: "Voice Interview Engine",
+        description: "Real AI voice asks questions. You speak your answers. Filler words, pace, confidence — all analyzed in real time.",
+        iconBg: "rgba(123,97,255,0.1)",
+        color: "#7B61FF",
+    },
+    {
+        icon: Brain,
+        title: "Smart Follow-ups",
+        description: "Give a vague answer? The AI probes deeper — just like a real interviewer. Keeps you on your toes.",
+        iconBg: "rgba(255,209,102,0.1)",
+        color: "#FFD166",
+    },
+    {
+        icon: BarChart3,
+        title: "Detailed Report Card",
+        description: "Per-question breakdown with your answer vs ideal answer side-by-side. Scores for clarity, confidence, relevance and depth.",
+        iconBg: "rgba(255,107,107,0.1)",
+        color: "#FF6B6B",
+    },
+    {
+        icon: Users,
+        title: "Interviewer Personas",
+        description: "Choose The Skeptic, The Friendly Senior, or Panel Mode with 3 interviewers. Practice for any style.",
+        iconBg: "rgba(78,255,163,0.1)",
+        color: "#4EFFA3",
+    },
+    {
+        icon: BookOpen,
+        title: "College TPO Dashboard",
+        description: "For placement officers — track entire batch readiness, set company-specific prep packs, and export placement reports.",
+        iconBg: "rgba(123,97,255,0.1)",
+        color: "#7B61FF",
+    },
+]
+
+const stats = [
+    { value: "50", suffix: "K+", label: "Mock Interviews Done" },
+    { value: "87", suffix: "%", label: "Placement Rate" },
+    { value: "200", suffix: "+", label: "Companies Covered" },
+    { value: "4.9", suffix: "★", label: "Student Rating" },
+]
 
 export default function LandingPage() {
-  return (
-    <div className="w-full relative overflow-hidden bg-background">
-      {/* Dark Futuristic Background */}
-      <div className="absolute inset-0 pointer-events-none z-[-1] overflow-hidden">
-        {/* Core deep dark gradient */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-background via-[#060810] to-[#020305]" />
+    return (
+        <div className="w-full" style={{ background: '#080B14', color: '#E8EDF5' }}>
 
-        {/* Neon Glow Blobs */}
-        <div className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] rounded-full blur-[150px] bg-[radial-gradient(circle,rgba(78,255,163,0.12)_0%,transparent_70%)] animate-[float_10s_ease-in-out_infinite]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[700px] h-[700px] rounded-full blur-[150px] bg-[radial-gradient(circle,rgba(123,97,255,0.15)_0%,transparent_70%)] animate-[float_12s_ease-in-out_infinite_reverse]" />
+            {/* ── Hero ── */}
+            <section className="relative min-h-[calc(100vh-68px)] flex flex-col items-center justify-center text-center px-6 py-20 overflow-hidden">
 
-        {/* Subtle grid pattern overlay */}
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTAgMGg0MHY0MEgwem0zOSAzOUgxVjFoMzh2MzhoLTF6IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDMpIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiLz48L3N2Zz4=')] [mask-image:linear-gradient(to_bottom,white,transparent_80%)] opacity-30" />
-      </div>
+                {/* Gradient Blobs */}
+                <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                    <div
+                        className="absolute rounded-full animate-float"
+                        style={{
+                            width: 600, height: 600,
+                            background: 'radial-gradient(circle, rgba(78,255,163,0.08) 0%, transparent 70%)',
+                            filter: 'blur(120px)',
+                            top: -200, left: -100,
+                        }}
+                    />
+                    <div
+                        className="absolute rounded-full animate-float"
+                        style={{
+                            width: 500, height: 500,
+                            background: 'radial-gradient(circle, rgba(123,97,255,0.1) 0%, transparent 70%)',
+                            filter: 'blur(120px)',
+                            bottom: -100, right: -100,
+                            animationDelay: '-4s',
+                        }}
+                    />
+                </div>
 
-      {/* Hero Section */}
-      <section className="min-h-[calc(100vh-72px)] flex flex-col items-center justify-center text-center px-6 py-20 relative pt-32 shrink-0">
+                {/* Badge */}
+                <div
+                    className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-7 text-sm font-medium"
+                    style={{ background: 'rgba(78,255,163,0.08)', border: '1px solid rgba(78,255,163,0.2)', color: '#4EFFA3' }}
+                >
+                    <div className="w-1.5 h-1.5 rounded-full animate-pulse-dot" style={{ background: '#4EFFA3' }} />
+                    AI-Powered Interview Coach
+                </div>
 
-        {/* Glowing Badge */}
-        <div className="inline-flex items-center gap-2 bg-gradient-to-r from-accent-2/10 to-accent-2/5 border border-accent-2/20 rounded-full py-1.5 px-5 mb-10 shadow-[0_0_20px_rgba(123,97,255,0.15)] backdrop-blur-md">
-          <BrainCircuit className="w-4 h-4 text-accent-2 animate-pulse" />
-          <span className="text-sm font-semibold text-accent-2 tracking-wide uppercase">Next-Gen AI Interviewer v2.0</span>
+                {/* Title */}
+                <h1
+                    className="font-heading font-extrabold leading-[1.0] tracking-[-2px] mb-6 max-w-4xl"
+                    style={{ fontSize: 'clamp(48px, 7vw, 88px)' }}
+                >
+                    Ace your next<br />
+                    interview with<br />
+                    <span
+                        className="bg-clip-text text-transparent"
+                        style={{ backgroundImage: 'linear-gradient(135deg, #4EFFA3, #7B61FF)' }}
+                    >
+                        PrepSense AI
+                    </span>
+                </h1>
+
+                {/* Subtext */}
+                <p className="text-lg max-w-xl mb-12 leading-[1.7] font-light" style={{ color: '#8892A4' }}>
+                    Upload your resume, let AI analyze your profile, and practice with a real voice interview. Get detailed feedback that actually helps you improve.
+                </p>
+
+                {/* CTAs */}
+                <div className="flex flex-col sm:flex-row gap-4 justify-center flex-wrap">
+                    <Link
+                        href="/upload"
+                        className="flex items-center gap-2.5 px-9 py-4 rounded-xl font-heading font-bold text-base text-black transition-all duration-200 hover:-translate-y-0.5"
+                        style={{ background: '#4EFFA3', boxShadow: '0 0 0 0 transparent' }}
+                        onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 16px 40px rgba(78,255,163,0.35)' }}
+                        onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 0 0 0 transparent' }}
+                    >
+                        🎙️ Start Free Mock Interview
+                    </Link>
+                    <Link
+                        href="/architecture"
+                        className="flex items-center gap-2.5 px-9 py-4 rounded-xl font-heading font-semibold text-base transition-all duration-200"
+                        style={{ background: 'transparent', border: '1px solid #1E2535', color: '#E8EDF5' }}
+                        onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.borderColor = '#8892A4'; (e.currentTarget as HTMLAnchorElement).style.background = '#0E1220' }}
+                        onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.borderColor = '#1E2535'; (e.currentTarget as HTMLAnchorElement).style.background = 'transparent' }}
+                    >
+                        View Architecture <ArrowRight className="w-4 h-4" />
+                    </Link>
+                </div>
+
+                {/* Stats */}
+                <div className="flex gap-12 mt-20 justify-center flex-wrap">
+                    {stats.map((stat) => (
+                        <div key={stat.label} className="text-center">
+                            <div className="font-heading text-[36px] font-extrabold leading-none" style={{ color: '#E8EDF5' }}>
+                                {stat.value}<span style={{ color: '#4EFFA3' }}>{stat.suffix}</span>
+                            </div>
+                            <div className="text-[13px] mt-1" style={{ color: '#4A5568' }}>{stat.label}</div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            {/* ── Features ── */}
+            <section className="px-6 md:px-12 py-24 max-w-7xl mx-auto text-center">
+                <div className="text-[12px] font-semibold tracking-[3px] uppercase mb-4" style={{ color: '#4EFFA3' }}>
+                    Everything you need
+                </div>
+                <h2
+                    className="font-heading font-extrabold leading-[1.1] tracking-[-1px] mb-16 max-w-lg mx-auto"
+                    style={{ fontSize: 'clamp(32px, 4vw, 52px)' }}
+                >
+                    Built differently, for real results
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
+                    {features.map((feat) => (
+                        <div
+                            key={feat.title}
+                            className="relative rounded-[20px] p-8 transition-all duration-300 group overflow-hidden cursor-default hover:-translate-y-1"
+                            style={{ background: '#0E1220', border: '1px solid #1E2535' }}
+                            onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(78,255,163,0.3)' }}
+                            onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = '#1E2535' }}
+                        >
+                            {/* Hover gradient overlay */}
+                            <div
+                                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-[20px]"
+                                style={{ background: 'linear-gradient(135deg, rgba(78,255,163,0.05), transparent)' }}
+                            />
+
+                            <div
+                                className="w-[52px] h-[52px] rounded-[14px] flex items-center justify-center mb-5 relative z-10"
+                                style={{ background: feat.iconBg }}
+                            >
+                                <feat.icon className="w-6 h-6" style={{ color: feat.color }} />
+                            </div>
+                            <h3 className="font-heading text-lg font-bold mb-2.5 relative z-10">{feat.title}</h3>
+                            <p className="text-sm leading-[1.7] relative z-10" style={{ color: '#8892A4' }}>{feat.description}</p>
+                        </div>
+                    ))}
+                </div>
+            </section>
         </div>
-
-        <h1 className="font-heading text-6xl md:text-7xl lg:text-9xl font-extrabold tracking-tighter mb-8 max-w-5xl leading-[1.05]">
-          Master your next <br />
-          <span className="bg-gradient-to-br from-accent via-white to-accent-2 bg-clip-text text-transparent drop-shadow-sm">
-            tech interview
-          </span>
-        </h1>
-
-        <p className="text-xl md:text-2xl text-muted-foreground font-light max-w-3xl mb-14 leading-relaxed">
-          Upload your resume and the target job description. Our advanced AI conducts a highly realistic, technical voice interview tailored precisely to the role you want.
-        </p>
-
-        <div className="flex flex-col sm:flex-row items-center gap-6">
-          <Link href="/upload">
-            {/* Primary CTA: Start Free Mock Interview */}
-            <Button size="lg" className="h-16 px-10 rounded-2xl font-heading font-extrabold bg-accent text-black hover:bg-accent/90 hover:-translate-y-1 transition-all hover:shadow-[0_0_40px_rgba(78,255,163,0.4)] gap-3 text-lg border border-accent/50 relative overflow-hidden group">
-              <div className="absolute inset-0 bg-white/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
-              Start Free Mock Interview <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </Link>
-          <Link href="/architecture">
-            {/* Secondary CTA: View Architecture */}
-            <Button size="lg" variant="outline" className="h-16 px-10 rounded-2xl font-heading font-bold border-border/50 bg-surface/30 backdrop-blur-sm hover:bg-surface hover:border-accent-2/50 transition-all text-lg hover:shadow-[0_0_30px_rgba(123,97,255,0.15)] hover:text-accent-2">
-              <Code2 className="w-5 h-5 mr-3" /> View Architecture
-            </Button>
-          </Link>
-        </div>
-
-        {/* Stats Section */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-16 mt-32 max-w-5xl mx-auto items-center p-8 rounded-3xl bg-surface/20 border border-border/30 backdrop-blur-xl shrink-0">
-          <div className="flex flex-col items-center justify-center relative">
-            <div className="absolute -inset-4 bg-accent/5 blur-xl rounded-full" />
-            <div className="font-heading text-4xl md:text-5xl font-black text-foreground leading-none mb-2">
-              95<span className="text-accent">%</span>
-            </div>
-            <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Placement Rate</div>
-          </div>
-
-          <div className="flex flex-col items-center justify-center relative">
-            <div className="absolute -inset-4 bg-accent-2/5 blur-xl rounded-full" />
-            <div className="font-heading text-4xl md:text-5xl font-black text-foreground leading-none mb-2">
-              50<span className="text-accent-2">k+</span>
-            </div>
-            <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Interviews Done</div>
-          </div>
-
-          <div className="flex flex-col items-center justify-center relative">
-            <div className="absolute -inset-4 bg-accent-4/5 blur-xl rounded-full" />
-            <div className="font-heading text-4xl md:text-5xl font-black text-foreground leading-none mb-2">
-              500<span className="text-accent-4">+</span>
-            </div>
-            <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Companies Covered</div>
-          </div>
-
-          <div className="flex flex-col items-center justify-center relative">
-            <div className="absolute -inset-4 bg-accent-3/5 blur-xl rounded-full" />
-            <div className="font-heading text-4xl md:text-5xl font-black text-foreground leading-none mb-2">
-              &lt;2<span className="text-accent-3">s</span>
-            </div>
-            <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Voice Latency</div>
-          </div>
-        </div>
-      </section>
-
-      {/* Feature Grid Section */}
-      <section id="features" className="py-32 px-6 md:px-12 max-w-7xl mx-auto relative shrinks-0">
-
-        <div className="text-center mb-20 relative">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[100px] bg-accent-2/20 blur-[100px] pointer-events-none" />
-          <div className="text-accent-2 font-black tracking-[4px] uppercase text-sm mb-4">Platform Capabilities</div>
-          <h2 className="font-heading text-4xl md:text-6xl font-extrabold tracking-tight max-w-3xl mx-auto leading-tight">
-            Engineered to simulate the toughest tech interviews.
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-
-          {/* Feature 1 */}
-          <div className="bg-surface/40 backdrop-blur-xl border border-border/50 rounded-[32px] p-10 hover:-translate-y-2 hover:border-accent/40 transition-all duration-300 group relative overflow-hidden shadow-2xl">
-            <div className="absolute inset-0 bg-gradient-to-br from-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-accent/20 blur-[60px] rounded-full group-hover:scale-150 transition-transform duration-700" />
-
-            <div className="w-16 h-16 rounded-2xl bg-accent/10 border border-accent/20 text-accent flex items-center justify-center mb-8 shadow-inner shadow-accent/20 relative z-10">
-              <FileText className="w-8 h-8" />
-            </div>
-            <h3 className="font-heading text-2xl font-bold mb-4 relative z-10">Context-Aware AI</h3>
-            <p className="text-muted-foreground text-base leading-relaxed relative z-10">
-              Provide your resume and a target job description. The model synthesizes the requirements and grills you exactly like a hiring manager would.
-            </p>
-          </div>
-
-          {/* Feature 2 */}
-          <div className="bg-surface/40 backdrop-blur-xl border border-border/50 rounded-[32px] p-10 hover:-translate-y-2 hover:border-accent-2/40 transition-all duration-300 group relative overflow-hidden shadow-2xl">
-            <div className="absolute inset-0 bg-gradient-to-br from-accent-2/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-accent-2/20 blur-[60px] rounded-full group-hover:scale-150 transition-transform duration-700" />
-
-            <div className="w-16 h-16 rounded-2xl bg-accent-2/10 border border-accent-2/20 text-accent-2 flex items-center justify-center mb-8 shadow-inner shadow-accent-2/20 relative z-10">
-              <Mic className="w-8 h-8" />
-            </div>
-            <h3 className="font-heading text-2xl font-bold mb-4 relative z-10">Real-Time Voice</h3>
-            <p className="text-muted-foreground text-base leading-relaxed relative z-10">
-              Engage via voice. No typing required. Low-latency speech-to-text ensures the conversation flows naturally without awkward silences.
-            </p>
-          </div>
-
-          {/* Feature 3 */}
-          <div className="bg-surface/40 backdrop-blur-xl border border-border/50 rounded-[32px] p-10 hover:-translate-y-2 hover:border-accent-4/40 transition-all duration-300 group relative overflow-hidden shadow-2xl">
-            <div className="absolute inset-0 bg-gradient-to-br from-accent-4/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-accent-4/20 blur-[60px] rounded-full group-hover:scale-150 transition-transform duration-700" />
-
-            <div className="w-16 h-16 rounded-2xl bg-accent-4/10 border border-accent-4/20 text-accent-4 flex items-center justify-center mb-8 shadow-inner shadow-accent-4/20 relative z-10">
-              <Activity className="w-8 h-8" />
-            </div>
-            <h3 className="font-heading text-2xl font-bold mb-4 relative z-10">Deep Analytics</h3>
-            <p className="text-muted-foreground text-base leading-relaxed relative z-10">
-              After the interview, receive a highly detailed dashboard with scores on clarity, relevance, confidence, and filler word detection.
-            </p>
-          </div>
-
-        </div>
-      </section>
-    </div>
-  )
+    )
 }

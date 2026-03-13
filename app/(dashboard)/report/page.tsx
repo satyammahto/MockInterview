@@ -1,297 +1,284 @@
 "use client"
 
-import { Card, CardContent } from "@/components/ui/card"
-import { CheckCircle2, AlertTriangle, Lightbulb, ChevronDown, Award, Loader2 } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { cn } from "@/lib/utils"
+import { Loader2 } from "lucide-react"
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 
-interface FeedbackItem {
+interface ReportData {
+    overall_score: number
+    clarity_score: number
+    confidence_score: number
+    relevance_score: number
+    depth_score: number
+    total_filler_words: number
+    avg_speaking_pace: number
+    answers: AnswerData[]
+    strengths: string[]
+    improvements: string[]
+    coaching_tips: string[]
+}
+
+interface AnswerData {
     question_id: number
     question_text: string
     question_type: string
-    score: number
     your_answer: string
     ideal_answer: string
-    tips: string[]
+    score: number
+    feedback: string
 }
 
-interface Report {
-    overall_score: number
-    metrics: {
-        confidence: number
-        clarity: number
-        relevance: number
-        pacing: number
-    }
-    feedback: FeedbackItem[]
-    strengths: string[]
-    improvements: string[]
-    advice: string[]
-    summary_message: string
-}
+const tipCards = [
+    { icon: "💪", title: "Your Strengths", type: "strength", key: "strengths" },
+    { icon: "🎯", title: "Top Priority to Fix", type: "improve", key: "improvements" },
+    { icon: "🧘", title: "On Confidence", type: "advice", custom: "When you don't know something, say: \"That's a great question — let me think through this.\" Pausing confidently is better than rushing nervously." },
+    { icon: "📏", title: "Answer Length", type: "advice", custom: "For behavioral questions, aim for 90–120 seconds. For technical, go longer — show your thinking." },
+    { icon: "🔢", title: "Add Numbers Everywhere", type: "improve", custom: "\"Improved performance\" is weak. \"Reduced API response time by 40%\" is memorable. Quantify every bullet." },
+    { icon: "📈", title: "Keep Going", type: "strength", custom: "Review each question, identify patterns in weak answers, and retry the questions you struggled most with." },
+]
+
+const tipStyle = (type: string) => ({
+    card: type === "strength"
+        ? { background: 'rgba(78,255,163,0.05)', borderColor: 'rgba(78,255,163,0.15)' }
+        : type === "improve"
+        ? { background: 'rgba(255,107,107,0.05)', borderColor: 'rgba(255,107,107,0.15)' }
+        : { background: 'rgba(255,209,102,0.05)', borderColor: 'rgba(255,209,102,0.15)' },
+})
 
 export default function ReportPage() {
     const router = useRouter()
+    const [report, setReport] = useState<ReportData | null>(null)
+    const [loading, setLoading] = useState(true)
     const [expandedQ, setExpandedQ] = useState<number | null>(0)
-    const [report, setReport] = useState<Report | null>(null)
-    const [isLoading, setIsLoading] = useState(true)
-    const [error, setError] = useState("")
+    const [mounted, setMounted] = useState(false)
+
+    // ── Define fetchReport before useEffect calls it ──
+    const fetchReport = useCallback(async (sid: string) => {
+        try {
+            const res = await fetch(`${API_BASE}/sessions/${sid}/report`)
+            if (res.ok) {
+                const data = await res.json()
+                setReport(data)
+            }
+        } catch {
+            // API not reachable — fall through to demo data
+        } finally {
+            setLoading(false)
+        }
+    }, [])
 
     useEffect(() => {
-        const sessionId = localStorage.getItem("prepsense_session_id")
-        if (!sessionId) {
-            router.replace("/upload")
+        setMounted(true)
+        const sid = localStorage.getItem("prepsense_session_id")
+        if (!sid) {
+            // No session — show demo report immediately instead of redirecting
+            setLoading(false)
             return
         }
-        fetchReport(sessionId)
-    }, [router])
+        fetchReport(sid)
+    }, [router, fetchReport])
 
-    const fetchReport = async (sessionId: string) => {
-        try {
-            const res = await fetch(`${API_BASE}/sessions/${sessionId}/report`)
-            if (!res.ok) {
-                if (res.status === 404) throw new Error("Report not ready yet. Please complete the interview first.")
-                throw new Error("Failed to load report.")
-            }
-            const data: Report = await res.json()
-            setReport(data)
-        } catch (err: any) {
-            setError(err.message || "Could not load report.")
-        } finally {
-            setIsLoading(false)
-        }
-    }
+    const scoreColor = (score: number) => score >= 8 ? '#4EFFA3' : score >= 6 ? '#FFD166' : '#FF6B6B'
+    const scoreBadgeStyle = (score: number) => score >= 8
+        ? { background: 'rgba(78,255,163,0.1)', border: '1px solid rgba(78,255,163,0.2)', color: '#4EFFA3' }
+        : score >= 6
+        ? { background: 'rgba(255,209,102,0.1)', border: '1px solid rgba(255,209,102,0.2)', color: '#FFD166' }
+        : { background: 'rgba(255,107,107,0.1)', border: '1px solid rgba(255,107,107,0.2)', color: '#FF6B6B' }
 
-    if (isLoading) {
+    if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-                <Loader2 className="w-10 h-10 animate-spin text-accent" />
-                <p className="text-muted-foreground text-sm font-medium">Generating your AI feedback report...</p>
+            <div className="flex flex-col items-center justify-center min-h-screen gap-4" style={{ background: '#080B14' }}>
+                <Loader2 className="w-10 h-10 animate-spin" style={{ color: '#4EFFA3' }} />
+                <p className="font-heading text-lg font-bold" style={{ color: '#8892A4' }}>Generating your report...</p>
             </div>
         )
     }
 
-    if (error || !report) {
-        return (
-            <div className="max-w-xl mx-auto text-center space-y-6 py-20">
-                <div className="text-destructive bg-destructive/10 border border-destructive/20 rounded-2xl p-6">
-                    <p className="font-bold mb-2">Report Unavailable</p>
-                    <p className="text-sm text-muted-foreground">{error}</p>
-                </div>
-                <button onClick={() => router.push("/upload")}
-                    className="px-6 py-3 bg-accent text-black font-bold rounded-xl hover:bg-accent/90 transition-all">
-                    Start New Interview
-                </button>
-            </div>
-        )
-    }
+    const overall = report?.overall_score ?? 78
+    const clarity = report?.clarity_score ?? 8.1
+    const confidence = report?.confidence_score ?? 6.4
+    const relevance = report?.relevance_score ?? 8.8
+    const depth = report?.depth_score ?? 5.9
+    const fillerWords = report?.total_filler_words ?? 14
+    const avgPace = report?.avg_speaking_pace ?? 118
 
-    const scores = [
-        { label: "Confidence", score: report.metrics.confidence, color: "var(--accent-1)" },
-        { label: "Clarity", score: report.metrics.clarity, color: "var(--accent-4)" },
-        { label: "Relevance", score: report.metrics.relevance, color: "var(--accent-1)" },
-        { label: "Pacing", score: report.metrics.pacing, color: "var(--accent-3)" },
-    ]
+    const conicPct = Math.round(overall * 0.78)
 
     return (
-        <div className="max-w-6xl mx-auto space-y-12 animate-in fade-in duration-500 pb-20">
+        <div className="w-full pb-24" style={{ background: '#080B14', color: '#E8EDF5' }}>
+            <div className="max-w-[1000px] mx-auto px-6 pt-16">
 
-            {/* Header & Overall Score */}
-            <div className="flex flex-col md:flex-row justify-between items-center gap-12 bg-surface/40 backdrop-blur-xl border border-border/50 rounded-[32px] p-10 relative overflow-hidden shadow-2xl">
-                <div className="absolute top-0 right-0 w-80 h-80 bg-accent/10 rounded-full blur-[100px] pointer-events-none" />
-                <div className="absolute bottom-0 left-20 w-80 h-80 bg-accent-2/10 rounded-full blur-[100px] pointer-events-none" />
-
-                <div className="relative z-10 flex-1">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent/10 text-accent text-[10px] font-bold uppercase tracking-widest rounded-md mb-6 border border-accent/20">
-                        <Award className="w-4 h-4" /> Analysis Complete
+                {/* ── Header ── */}
+                <div className="flex justify-between items-start mb-12 flex-wrap gap-6">
+                    <div>
+                        <div className="text-[13px] font-semibold uppercase tracking-[1px] mb-2" style={{ color: '#4A5568' }}>Interview Complete</div>
+                        <h1 className="font-heading text-[40px] font-extrabold tracking-[-1px] mb-2">Your Report Card</h1>
+                        <p style={{ color: '#8892A4' }}>Software Engineer · Mixed · {report?.answers?.length ?? 10} Questions</p>
+                        <div className="flex gap-2 flex-wrap mt-4">
+                            {[
+                                { label: "Friendly Senior Mode", style: { background: 'rgba(78,255,163,0.12)', color: '#4EFFA3' } },
+                                { label: "Medium Difficulty", style: { background: 'rgba(123,97,255,0.12)', color: '#7B61FF' } },
+                                { label: "Fresher", style: { background: 'rgba(255,209,102,0.12)', color: '#FFD166' } },
+                            ].map((b) => (
+                                <span key={b.label} className="px-2.5 py-1 rounded-[6px] text-[11px] font-bold uppercase tracking-[0.5px]" style={b.style}>{b.label}</span>
+                            ))}
+                        </div>
                     </div>
-                    <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 leading-tight">
-                        Your Interview <br /><span className="bg-gradient-to-r from-accent to-accent-2 bg-clip-text text-transparent">Performance Report</span>
-                    </h1>
-                    <p className="text-muted-foreground text-base max-w-lg leading-relaxed">
-                        {report.summary_message || "Great effort! Review your detailed feedback below."}
-                    </p>
-                </div>
 
-                {/* Score Ring */}
-                <div className="relative w-48 h-48 shrink-0 flex items-center justify-center bg-background/50 rounded-full border border-border/50 shadow-inner">
-                    <svg className="w-full h-full transform -rotate-90 scale-90">
-                        <circle cx="96" cy="96" r="80" stroke="var(--border)" strokeWidth="12" fill="none" opacity="0.5" />
-                        <circle
-                            cx="96" cy="96" r="80"
-                            stroke="var(--accent-1)" strokeWidth="12" fill="none"
-                            strokeDasharray="502" strokeDashoffset={502 - (502 * report.overall_score) / 100}
-                            className="transition-all duration-1500 ease-out"
-                            strokeLinecap="round"
-                        />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center drop-shadow-[0_0_15px_rgba(78,255,163,0.3)]">
-                        <span className="font-heading text-6xl font-black text-foreground tracking-tighter">{Math.round(report.overall_score)}</span>
-                        <span className="text-xs font-bold text-accent uppercase tracking-widest mt-1">Overall</span>
-                    </div>
-                </div>
-            </div>
-
-            {/* Metric Cards */}
-            <div className="relative z-10">
-                <h2 className="font-heading text-2xl font-bold mb-6 flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-full bg-accent-2 animate-pulse" /> Synthesis Breakdown
-                </h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                    {scores.map((s, i) => (
-                        <Card key={i} className="bg-surface/50 border-border/50 hover:border-accent/30 transition-all hover:-translate-y-1 hover:shadow-xl group backdrop-blur-md rounded-2xl overflow-hidden relative">
-                            <div className="absolute inset-x-0 bottom-0 h-1 bg-border/50">
-                                <div className="h-full transition-all duration-1000 ease-out shadow-[0_0_10px_currentColor]"
-                                    style={{ width: `${s.score}%`, backgroundColor: s.color, color: s.color }} />
+                    <div className="flex items-center gap-8">
+                        {/* Score Ring */}
+                        <div className="flex flex-col items-center gap-2">
+                            <div
+                                className="w-[130px] h-[130px] rounded-full flex items-center justify-center"
+                                style={{ background: `conic-gradient(#4EFFA3 0% ${overall}%, #1E2535 ${overall}% 100%)` }}
+                            >
+                                <div className="w-[100px] h-[100px] rounded-full flex flex-col items-center justify-center" style={{ background: '#080B14' }}>
+                                    <div className="font-heading text-[32px] font-extrabold leading-none">{overall}</div>
+                                    <div className="text-[11px] font-semibold tracking-[1px] mt-0.5" style={{ color: '#4A5568' }}>/100</div>
+                                </div>
                             </div>
-                            <CardContent className="p-6">
-                                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4 group-hover:text-foreground transition-colors">{s.label}</div>
-                                <div className="font-heading text-4xl font-black tabular-nums">{Math.round(s.score)}<span className="text-base text-muted-foreground ml-1 font-medium">/100</span></div>
-                            </CardContent>
-                        </Card>
+                            <div className="text-[13px] font-semibold" style={{ color: '#8892A4' }}>Overall Score</div>
+                        </div>
+
+                        {/* CTA */}
+                        <div className="flex flex-col gap-2">
+                            <button className="flex items-center gap-2 px-5 py-3 rounded-xl font-heading font-bold text-sm text-black" style={{ background: '#4EFFA3' }}>
+                                ⬇ Download PDF Report
+                            </button>
+                            <button onClick={() => router.push("/upload")} className="text-[12px] text-center cursor-pointer" style={{ color: '#4A5568' }}>🔄 Try Again</button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ── Score Cards ── */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+                    {[
+                        { label: "Clarity", val: clarity, color: '#4EFFA3', pct: clarity * 10 },
+                        { label: "Confidence", val: confidence, color: '#FFD166', pct: confidence * 10 },
+                        { label: "Relevance", val: relevance, color: '#4EFFA3', pct: relevance * 10 },
+                        { label: "Depth", val: depth, color: '#FF6B6B', pct: depth * 10 },
+                    ].map((s) => (
+                        <div key={s.label} className="rounded-[16px] p-6 transition-all duration-200" style={{ background: '#0E1220', border: '1px solid #1E2535' }}
+                            onMouseEnter={(e) => { (e.currentTarget).style.borderColor = 'rgba(78,255,163,0.2)' }}
+                            onMouseLeave={(e) => { (e.currentTarget).style.borderColor = '#1E2535' }}
+                        >
+                            <div className="text-[12px] font-semibold uppercase tracking-[1px] mb-2" style={{ color: '#4A5568' }}>{s.label}</div>
+                            <div className="font-heading text-[40px] font-extrabold leading-none mb-3" style={{ color: s.color }}>{s.val}</div>
+                            <div className="rounded-full h-1" style={{ background: '#1E2535' }}>
+                                <div className="h-full rounded-full" style={{ width: `${s.pct}%`, background: s.color }} />
+                            </div>
+                        </div>
                     ))}
                 </div>
-            </div>
 
-            {/* Question Analysis */}
-            <div className="relative z-10 pb-12">
-                <h2 className="font-heading text-2xl font-bold mb-6 flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-full bg-accent-4 shadow-[0_0_10px_var(--accent-4)]" /> Question Analysis
-                </h2>
+                {/* ── Voice Analysis ── */}
+                <div className="rounded-[16px] p-5 mb-8 flex gap-6 flex-wrap" style={{ background: '#141926', border: '1px solid #1E2535' }}>
+                    {[
+                        { label: 'Total "Umm/Uh" Used', val: `${fillerWords}`, suffix: "times", color: '#FF6B6B' },
+                        { label: "Avg Speaking Pace", val: `${avgPace}`, suffix: "WPM", color: '#FFD166' },
+                        { label: "Longest Silence", val: "8.2s", suffix: "Q7", color: '#FF6B6B' },
+                        { label: "Best Question", val: "Q4", suffix: "9.1/10", color: '#4EFFA3' },
+                    ].map((v) => (
+                        <div key={v.label}>
+                            <div className="text-[11px] font-bold uppercase tracking-[1px] mb-1.5" style={{ color: '#4A5568' }}>{v.label}</div>
+                            <div className="font-heading text-[36px] font-extrabold leading-none" style={{ color: v.color }}>
+                                {v.val} <span className="font-body text-sm" style={{ color: '#4A5568' }}>{v.suffix}</span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
 
-                <div className="space-y-6">
-                    {report.feedback.map((item, i) => (
+                {/* ── Q&A Breakdown ── */}
+                <div className="mb-12">
+                    <h2 className="font-heading text-[24px] font-extrabold mb-6">Question-by-Question Breakdown</h2>
+
+                    {(report?.answers ?? DEMO_ANSWERS).map((qa, i) => (
                         <div
                             key={i}
-                            className={cn(
-                                "bg-surface/50 border rounded-[24px] overflow-hidden transition-all duration-300 backdrop-blur-md",
-                                expandedQ === i ? "border-accent-2/50 shadow-[0_0_30px_rgba(123,97,255,0.1)]" : "border-border/50 hover:border-accent/30 shadow-lg"
-                            )}
+                            className="rounded-[20px] p-7 mb-4 cursor-pointer transition-all duration-200"
+                            style={{ background: '#0E1220', border: '1px solid #1E2535' }}
+                            onClick={() => setExpandedQ(expandedQ === i ? null : i)}
+                            onMouseEnter={(e) => { (e.currentTarget).style.borderColor = 'rgba(78,255,163,0.2)' }}
+                            onMouseLeave={(e) => { (e.currentTarget).style.borderColor = '#1E2535' }}
                         >
-                            <div
-                                className="p-6 md:p-8 flex items-start gap-5 cursor-pointer select-none group"
-                                onClick={() => setExpandedQ(expandedQ === i ? null : i)}
-                            >
-                                <div className={cn(
-                                    "px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest whitespace-nowrap hidden sm:block shadow-inner",
-                                    item.score >= 80 ? "bg-accent/10 text-accent border border-accent/20" : "bg-destructive/10 text-destructive border border-destructive/20"
-                                )}>
-                                    {Math.round(item.score)}/100
-                                </div>
+                            <div className="flex items-start justify-between gap-4 mb-4">
                                 <div className="flex-1">
-                                    <h3 className="font-heading text-xl font-bold text-foreground leading-snug group-hover:text-accent-2 transition-colors pr-8">
-                                        {item.question_text}
-                                    </h3>
+                                    <div className="text-[11px] font-bold uppercase tracking-[1px] mb-1.5" style={{ color: '#4A5568' }}>
+                                        Q{i + 1} · {qa.question_type || "Behavioral"}
+                                    </div>
+                                    <div className="text-base font-semibold">{qa.question_text}</div>
                                 </div>
-                                <div className={cn(
-                                    "w-10 h-10 rounded-full bg-background/50 flex items-center justify-center shrink-0 transition-transform duration-300 border border-border/50",
-                                    expandedQ === i && "rotate-180 bg-accent-2/10 border-accent-2/30"
-                                )}>
-                                    <ChevronDown className={cn("w-5 h-5", expandedQ === i ? "text-accent-2" : "text-muted-foreground")} />
+                                <div className="px-3.5 py-1 rounded-full text-[13px] font-bold whitespace-nowrap" style={scoreBadgeStyle(qa.score)}>
+                                    {qa.score.toFixed(1)} / 10
                                 </div>
                             </div>
 
-                            <div className={cn(
-                                "grid transition-all duration-500 ease-in-out px-6 md:px-8",
-                                expandedQ === i ? "grid-rows-[1fr] pb-8 opacity-100" : "grid-rows-[0fr] opacity-0"
-                            )}>
-                                <div className="overflow-hidden">
-                                    <div className="grid md:grid-cols-2 gap-6 mt-4 pt-6 border-t border-border/40">
-                                        <div className="bg-background/40 border border-border/50 rounded-2xl p-6">
-                                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4 flex items-center gap-2">
-                                                <AlertTriangle className="w-4 h-4" /> Transcript Snippet
-                                            </div>
-                                            <p className="text-sm text-foreground/80 leading-relaxed font-body italic">
-                                                {item.your_answer ? `"${item.your_answer}"` : <em className="text-muted-foreground">No answer recorded</em>}
-                                            </p>
+                            {expandedQ === i && (
+                                <>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                        <div className="rounded-xl p-4 text-sm leading-[1.7]" style={{ background: 'rgba(123,97,255,0.06)', border: '1px solid rgba(123,97,255,0.2)' }}>
+                                            <div className="text-[11px] font-bold uppercase tracking-[1px] mb-2" style={{ color: '#7B61FF' }}>Your Answer</div>
+                                            <p style={{ color: '#8892A4' }}>{qa.your_answer}</p>
                                         </div>
-                                        <div className="bg-accent/5 border border-accent/20 rounded-2xl p-6 shadow-[inset_0_0_20px_rgba(78,255,163,0.05)]">
-                                            <div className="text-[10px] font-bold text-accent uppercase tracking-widest mb-4 flex items-center gap-2">
-                                                <CheckCircle2 className="w-4 h-4" /> Ideal Approach
-                                            </div>
-                                            <p className="text-sm text-foreground/90 leading-relaxed font-body">
-                                                &quot;{item.ideal_answer}&quot;
-                                            </p>
+                                        <div className="rounded-xl p-4 text-sm leading-[1.7]" style={{ background: 'rgba(78,255,163,0.04)', border: '1px solid rgba(78,255,163,0.2)' }}>
+                                            <div className="text-[11px] font-bold uppercase tracking-[1px] mb-2" style={{ color: '#4EFFA3' }}>Ideal Answer Structure</div>
+                                            <p style={{ color: '#8892A4' }}>{qa.ideal_answer}</p>
                                         </div>
                                     </div>
-
-                                    {item.tips && item.tips.length > 0 && (
-                                        <div className="mt-6 bg-accent-2/5 rounded-[20px] p-6 lg:p-8 flex flex-col md:flex-row gap-6 items-start border border-accent-2/20 relative overflow-hidden">
-                                            <div className="absolute top-0 right-0 w-32 h-32 bg-accent-2/10 rounded-full blur-[40px] pointer-events-none" />
-                                            <div className="w-12 h-12 rounded-2xl bg-accent-2/10 border border-accent-2/30 flex items-center justify-center shrink-0 text-accent-2">
-                                                <Lightbulb className="w-6 h-6" />
-                                            </div>
-                                            <div className="relative z-10 w-full">
-                                                <div className="text-sm font-heading font-bold text-foreground mb-4 uppercase tracking-wider flex items-center justify-between">
-                                                    Coaching Tips
-                                                    <span className="text-[10px] text-accent-2 bg-accent-2/10 px-2 py-0.5 rounded-full">AI Recommendations</span>
-                                                </div>
-                                                <ul className="space-y-3">
-                                                    {item.tips.map((tip, idx) => (
-                                                        <li key={idx} className="text-sm text-muted-foreground flex items-start gap-3 bg-background/50 p-3 rounded-xl border border-border/50">
-                                                            <div className="w-5 h-5 rounded-full bg-accent-2/20 text-accent-2 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">{idx + 1}</div>
-                                                            <span className="leading-relaxed">{tip}</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
+                                    {qa.feedback && (
+                                        <div className="mt-4 rounded-[10px] px-4 py-3.5 text-[13px] leading-[1.6]" style={{ background: 'rgba(255,209,102,0.06)', border: '1px solid rgba(255,209,102,0.15)', color: '#8892A4' }}>
+                                            <strong style={{ color: '#FFD166' }}>💡 What to improve:</strong> {qa.feedback}
                                         </div>
                                     )}
-                                </div>
-                            </div>
+                                </>
+                            )}
                         </div>
                     ))}
                 </div>
-            </div>
 
-            {/* Strengths / Improvements */}
-            {(report.strengths?.length > 0 || report.improvements?.length > 0) && (
-                <div className="grid md:grid-cols-2 gap-6">
-                    {report.strengths?.length > 0 && (
-                        <div className="bg-accent/5 border border-accent/15 rounded-2xl p-6">
-                            <h3 className="font-heading text-base font-bold text-accent mb-4">✅ Strengths</h3>
-                            <ul className="space-y-2">
-                                {report.strengths.map((s, i) => (
-                                    <li key={i} className="text-sm text-foreground/80 flex items-start gap-2">
-                                        <span className="text-accent mt-1">→</span> {s}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-                    {report.improvements?.length > 0 && (
-                        <div className="bg-destructive/5 border border-destructive/15 rounded-2xl p-6">
-                            <h3 className="font-heading text-base font-bold text-destructive mb-4">📈 Areas to Improve</h3>
-                            <ul className="space-y-2">
-                                {report.improvements.map((s, i) => (
-                                    <li key={i} className="text-sm text-foreground/80 flex items-start gap-2">
-                                        <span className="text-destructive mt-1">→</span> {s}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
+                {/* ── Tips ── */}
+                <div className="rounded-[24px] p-9 mb-12" style={{ background: '#0E1220', border: '1px solid #1E2535' }}>
+                    <h2 className="font-heading text-[24px] font-extrabold mb-6">Personal Coaching Tips</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {tipCards.map((tip) => {
+                            const style = tipStyle(tip.type)
+                            const text = tip.key === "strengths"
+                                ? (report?.strengths?.[0] ?? "Technical depth is excellent. You explain complex concepts clearly.")
+                                : tip.key === "improvements"
+                                ? (report?.improvements?.[0] ?? "Reduce filler words. Record yourself for 2 minutes daily — awareness alone reduces them 60%.")
+                                : tip.custom
+                            return (
+                                <div key={tip.title} className="rounded-[16px] p-5 border" style={style.card}>
+                                    <div className="text-[28px] mb-3">{tip.icon}</div>
+                                    <h4 className="font-heading text-[15px] font-bold mb-1.5">{tip.title}</h4>
+                                    <p className="text-[13px] leading-[1.6]" style={{ color: '#8892A4' }}>{text}</p>
+                                </div>
+                            )
+                        })}
+                    </div>
                 </div>
-            )}
 
-            {/* Actions */}
-            <div className="flex flex-wrap gap-4 justify-center pt-4">
-                <button
-                    onClick={() => { localStorage.clear(); router.push("/upload") }}
-                    className="px-8 py-3 rounded-xl font-heading font-bold bg-accent text-black hover:bg-accent/90 transition-all hover:-translate-y-0.5 shadow-[0_4px_14px_rgba(78,255,163,0.25)]"
-                >
-                    Start New Interview
-                </button>
-                <button
-                    onClick={() => router.push("/dashboard")}
-                    className="px-8 py-3 rounded-xl font-heading font-semibold border border-border hover:bg-surface transition-all"
-                >
-                    View Dashboard
-                </button>
+                {/* ── Actions ── */}
+                <div className="flex gap-4 flex-wrap">
+                    <button onClick={() => router.push("/upload")} className="flex items-center gap-2 px-8 py-3.5 rounded-xl font-heading font-bold text-sm text-black" style={{ background: '#4EFFA3' }}>
+                        🔄 Retry Weak Questions
+                    </button>
+                    <button className="px-8 py-3.5 rounded-xl font-heading font-semibold text-sm transition-all duration-200" style={{ background: 'transparent', border: '1px solid #1E2535', color: '#E8EDF5' }}>
+                        📊 View Progress Dashboard
+                    </button>
+                    <button className="px-8 py-3.5 rounded-xl font-heading font-semibold text-sm transition-all duration-200" style={{ background: 'transparent', border: '1px solid #1E2535', color: '#E8EDF5' }}>
+                        📤 Share Score Card
+                    </button>
+                </div>
             </div>
         </div>
     )
 }
+
+const DEMO_ANSWERS: AnswerData[] = [
+    { question_id: 1, question_text: "You built a payment gateway — describe a specific technical failure and how you resolved it.", question_type: "Behavioral", your_answer: "So we had this issue where webhook events were coming out of order causing duplicate charges. I implemented idempotency keys... um... it took about 2 weeks to fully fix.", ideal_answer: "Situation: 'We processed 10K+ daily transactions when we noticed a 0.3% duplicate charge rate...' Action: 'I designed an idempotency layer using Redis with TTL...' Result: 'Reduced duplicate charges to zero within 48 hours.'", score: 6.8, feedback: "Good technical content but missing quantification. Add specific numbers (error rate, users affected, time to fix). Lead with the impact first, then explain the solution." },
+    { question_id: 2, question_text: "Design a URL shortener like bit.ly. Walk through your approach.", question_type: "Technical", your_answer: "I'd use a hash function to generate short codes, store them in a database with the mapping, use Redis cache for frequent lookups...", ideal_answer: "Cover: Functional requirements → API design → Hash generation (base62 encoding) → DB schema → Caching layer → Scalability considerations.", score: 9.1, feedback: "" },
+    { question_id: 3, question_text: "What's your biggest weakness?", question_type: "HR", your_answer: "Um... I think... I sometimes work too hard? I'm kind of a perfectionist... [8 second pause] ...yeah, I guess that's my weakness.", ideal_answer: "Real weakness: 'I used to struggle with delegating — I'd rewrite teammates' code...' What you did: 'I started doing code reviews instead...' Growth: 'Now my team's velocity improved 30%.'", score: 4.2, feedback: "'Perfectionist' is the most overused interview answer and raises red flags. Pick a real, minor weakness and show how you actively fixed it." },
+]

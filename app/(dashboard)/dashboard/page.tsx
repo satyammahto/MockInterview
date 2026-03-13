@@ -53,8 +53,9 @@ export default function DashboardPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center min-h-[60vh]">
-                <Loader2 className="w-8 h-8 animate-spin text-accent" />
+            <div className="flex items-center justify-center min-h-[60vh] flex-col gap-4">
+                <Loader2 className="w-7 h-7 animate-spin text-accent" />
+                <span className="text-sm text-muted-foreground font-medium">Loading dashboard...</span>
             </div>
         )
     }
@@ -66,31 +67,34 @@ export default function DashboardPage() {
 
     const statCards = stats
         ? [
-            { label: "Int. Completed", value: String(stats.interviews_completed), icon: Activity, metric: "" },
-            { label: "Avg. Score", value: `${stats.avg_score}%`, icon: TrendingUp, metric: "" },
-            { label: "Practice Time", value: `${stats.practice_time_hours}h`, icon: Clock, metric: "" },
-            { label: "Goal Readiness", value: stats.goal_readiness, icon: Target, metric: "" },
+            { label: "Int. Completed", value: String(stats.interviews_completed), icon: Activity, color: "var(--accent-1)" },
+            { label: "Avg. Score", value: `${stats.avg_score}%`, icon: TrendingUp, color: "var(--accent-2)" },
+            { label: "Practice Time", value: `${stats.practice_time_hours}h`, icon: Clock, color: "var(--accent-4)" },
+            { label: "Goal Readiness", value: stats.goal_readiness, icon: Target, color: "var(--accent-3)" },
         ]
         : []
 
     return (
         <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-2">
                 <div>
-                    <h1 className="font-heading text-3xl font-extrabold tracking-tight mb-2">Your Dashboard</h1>
-                    <p className="text-muted-foreground">Here&apos;s a look at your interview readiness.</p>
+                    <h1 className="font-heading text-3xl font-extrabold tracking-tight mb-1.5">Your Dashboard</h1>
+                    <p className="text-muted-foreground text-sm">Here&apos;s a look at your interview readiness.</p>
                 </div>
                 <button
                     onClick={() => router.push("/upload")}
-                    className="bg-accent text-black font-bold px-6 py-2.5 rounded-xl hover:bg-accent/90 transition-transform hover:-translate-y-0.5 shadow-[0_4px_14px_rgba(78,255,163,0.25)]"
+                    className="flex items-center gap-2 font-heading font-bold text-sm text-black px-5 py-2.5 rounded-lg transition-all duration-150 hover:-translate-y-px"
+                    style={{ background: 'var(--accent-1)', boxShadow: '0 0 0 1px rgba(78,255,163,0.3), 0 4px 16px rgba(78,255,163,0.2)' }}
                 >
-                    Start Practice
+                    Start Practice →
                 </button>
             </div>
 
             {error && (
-                <div className="bg-destructive/10 border border-destructive/20 text-destructive rounded-xl p-4 text-sm">
-                    {error} — Showing empty state.
+                <div className="rounded-xl px-5 py-4 text-sm font-medium text-destructive flex items-start gap-3" style={{ background: 'rgba(255,107,107,0.06)', border: '1px solid rgba(255,107,107,0.15)' }}>
+                    <span className="mt-0.5">⚠</span>
+                    <span>{error} — Showing empty state.</span>
                 </div>
             )}
 
@@ -98,28 +102,28 @@ export default function DashboardPage() {
             {statCards.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {statCards.map((stat, i) => (
-                        <Card key={i} className="bg-surface border-border hover:border-accent/40 transition-colors group">
-                            <CardHeader className="pl-6 pt-6 pb-2 flex flex-row items-center justify-between">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
-                                <div className="p-2 bg-secondary rounded-lg group-hover:bg-accent/10 transition-colors">
-                                    <stat.icon className="w-4 h-4 text-foreground group-hover:text-accent" />
+                        <div key={i} className="relative rounded-2xl p-6 group hover:-translate-y-0.5 transition-all duration-150 overflow-hidden"
+                            style={{ background: 'rgba(10,14,26,0.7)', border: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(16px)' }}>
+                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" style={{ background: `radial-gradient(circle at 80% 20%, ${stat.color}08 0%, transparent 60%)` }} />
+                            <div className="flex items-center justify-between mb-5">
+                                <span className="text-xs font-bold text-muted-foreground uppercase tracking-[0.1em]">{stat.label}</span>
+                                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${stat.color}12`, border: `1px solid ${stat.color}20` }}>
+                                    <stat.icon className="w-3.5 h-3.5" style={{ color: stat.color }} />
                                 </div>
-                            </CardHeader>
-                            <CardContent className="pl-6 pb-6 pt-0">
-                                <div className="font-heading text-3xl font-extrabold">{stat.value}</div>
-                            </CardContent>
-                        </Card>
+                            </div>
+                            <div className="font-heading text-3xl font-extrabold tracking-tight" style={{ color: stat.color }}>{stat.value}</div>
+                        </div>
                     ))}
                 </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                 {/* Performance Chart */}
-                <Card className="col-span-1 lg:col-span-2 bg-surface border-border">
-                    <CardHeader>
-                        <CardTitle className="font-heading text-xl">Performance Trend</CardTitle>
-                    </CardHeader>
-                    <CardContent className="h-[300px] flex items-end justify-between px-8 pb-6 gap-2 border-t border-border/50 relative overflow-hidden">
+                <div className="col-span-1 lg:col-span-2 rounded-2xl overflow-hidden" style={{ background: 'rgba(10,14,26,0.7)', border: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(16px)' }}>
+                    <div className="px-6 py-5 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                        <h2 className="font-heading text-base font-bold tracking-tight">Performance Trend</h2>
+                    </div>
+                    <div className="h-[280px] flex items-end justify-between px-6 pb-6 pt-4 gap-1.5 relative overflow-hidden">
                         {trend.length === 0 ? (
                             <div className="absolute inset-0 flex items-center justify-center">
                                 <p className="text-muted-foreground text-sm">Complete your first interview to see trends.</p>
@@ -128,24 +132,24 @@ export default function DashboardPage() {
                             trend.map((height, i) => (
                                 <div key={i} className="w-full relative group self-end">
                                     <div
-                                        className="w-full bg-accent/20 rounded-t-sm group-hover:bg-accent/40 transition-colors"
-                                        style={{ height: `${Math.max(height, 4)}%` }}
+                                        className="w-full rounded-t-sm transition-all duration-200 group-hover:opacity-100 opacity-60"
+                                        style={{ height: `${Math.max(height, 4)}%`, background: 'linear-gradient(to top, rgba(78,255,163,0.25), rgba(78,255,163,0.1))' }}
                                     />
-                                    <div className="absolute top-0 left-0 w-full h-1 bg-accent rounded-t-sm group-hover:h-2 transition-all" />
+                                    <div className="absolute top-0 left-0 w-full h-[2px] bg-accent rounded-t-sm" />
                                 </div>
                             ))
                         )}
-                    </CardContent>
-                </Card>
+                    </div>
+                </div>
 
                 {/* History List */}
-                <Card className="col-span-1 bg-surface border-border">
-                    <CardHeader>
-                        <CardTitle className="font-heading text-xl">Recent Interviews</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
+                <div className="col-span-1 rounded-2xl overflow-hidden" style={{ background: 'rgba(10,14,26,0.7)', border: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(16px)' }}>
+                    <div className="px-6 py-5 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                        <h2 className="font-heading text-base font-bold tracking-tight">Recent Interviews</h2>
+                    </div>
+                    <div className="p-4 space-y-2">
                         {history.length === 0 ? (
-                            <p className="text-muted-foreground text-sm text-center py-8">No sessions yet.<br />Start your first practice!</p>
+                            <p className="text-muted-foreground text-sm text-center py-10">No sessions yet.<br />Start your first practice!</p>
                         ) : (
                             history.map((item, i) => (
                                 <div
@@ -154,28 +158,29 @@ export default function DashboardPage() {
                                         localStorage.setItem("prepsense_session_id", item.session_id)
                                         router.push("/report")
                                     }}
-                                    className="flex items-center justify-between p-3 rounded-xl border border-border/40 hover:bg-secondary/20 transition-colors cursor-pointer group"
+                                    className="flex items-center justify-between p-3 rounded-xl transition-all duration-150 cursor-pointer group hover:-translate-y-px"
+                                    style={{ border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center group-hover:bg-background transition-colors">
-                                            <Calendar className="w-5 h-5 text-muted-foreground" />
+                                        <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                            <Calendar className="w-4 h-4 text-muted-foreground" />
                                         </div>
                                         <div>
-                                            <div className="text-sm font-bold text-foreground truncate max-w-[120px]">{item.role}</div>
-                                            <div className="text-xs text-muted-foreground">{item.date} · {item.difficulty}</div>
+                                            <div className="text-sm font-bold text-foreground truncate max-w-[120px] tracking-tight">{item.role}</div>
+                                            <div className="text-xs text-muted-foreground mt-0.5">{item.date} · {item.difficulty}</div>
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <div className={`font-heading font-extrabold text-sm ${item.score > 85 ? 'text-accent' : item.score > 70 ? 'text-[var(--accent-4)]' : 'text-foreground'}`}>
+                                        <div className={`font-heading font-extrabold text-base ${item.score > 85 ? 'text-accent' : item.score > 70 ? 'text-[var(--accent-4)]' : 'text-foreground'}`}>
                                             {item.score}
                                         </div>
-                                        <div className="text-xs text-muted-foreground">/100</div>
+                                        <div className="text-[10px] text-muted-foreground">/100</div>
                                     </div>
                                 </div>
                             ))
                         )}
-                    </CardContent>
-                </Card>
+                    </div>
+                </div>
             </div>
         </div>
     )
