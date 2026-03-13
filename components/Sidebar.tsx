@@ -3,19 +3,6 @@
 import { useRef, useCallback, useEffect } from "react"
 import { useState } from "react"
 import Link from "next/link"
-<<<<<<< HEAD
-import { Home, FileText, BarChart2, Settings, Mic, Sparkles } from "lucide-react"
-
-export function Sidebar() {
-    const navItems = [
-        { icon: Home, label: "Dashboard", href: "/dashboard" },
-        { icon: Mic, label: "New Interview", href: "/upload" },
-        { icon: FileText, label: "Resume Analyzer", href: "/resume-analyzer" },
-        { icon: Sparkles, label: "Question Generator", href: "/question-generator" },
-        { icon: BarChart2, label: "Reports", href: "/report" },
-        { icon: Settings, label: "Settings", href: "/settings" },
-    ]
-=======
 import { usePathname } from "next/navigation"
 import { Home, FileText, BarChart2, Settings, Mic, LogOut, X, ChevronRight } from "lucide-react"
 import { logoutAction } from "@/app/actions/auth"
@@ -65,7 +52,6 @@ export function Sidebar() {
     useEffect(() => {
         close()
     }, [pathname, close])
->>>>>>> 43af45495dfc197909b53ff7992bfae07c08618d
 
     return (
         <>

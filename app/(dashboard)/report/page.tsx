@@ -20,8 +20,8 @@ interface ReportData {
     feedback: AnswerData[]
     strengths: string[]
     improvements: string[]
-<<<<<<< HEAD
-    coaching_tips: string[]
+    advice: string[]
+    summary_message: string
     // Confidence Analysis (Feature 2)
     confidence_analysis?: {
         confidence_score: number
@@ -42,10 +42,6 @@ interface ReportData {
             missing_components: string[]
         }[]
     }
-=======
-    advice: string[]
-    summary_message: string
->>>>>>> 43af45495dfc197909b53ff7992bfae07c08618d
 }
 
 interface AnswerData {
@@ -131,8 +127,8 @@ export default function ReportPage() {
     const confidence = report?.metrics?.confidence ?? 64
     const relevance = report?.metrics?.relevance ?? 88
     const depth = report?.metrics?.pacing ?? 59
-    const fillerWords = 14 // Handled locally per-question now, we can default or aggregate later
-    const avgPace = report?.metrics?.pacing ?? 118
+    const fillerWords = report?.confidence_analysis?.filler_word_count ?? 14
+    const avgPace = report?.confidence_analysis?.pace_wpm ?? (report?.metrics?.pacing ?? 118)
 
     const scoreMetrics = [
         { label: "Clarity", val: clarity, colorClass: "text-primary", barClass: "bg-primary", pct: clarity },
@@ -142,9 +138,9 @@ export default function ReportPage() {
     ]
 
     const voiceStats = [
-        { label: 'Estimated Pauses', val: `0`, suffix: "times", colorClass: "text-destructive" },
-        { label: "Pacing Score", val: `${avgPace}`, suffix: "/100", colorClass: "text-accent-4" },
-        { label: "Confidence Score", val: `${confidence}`, suffix: "/100", colorClass: "text-primary" },
+        { label: "Filler Words", val: `${fillerWords}`, suffix: "total", colorClass: "text-destructive" },
+        { label: "Speaking Pace", val: `${avgPace}`, suffix: "WPM", colorClass: "text-accent-4" },
+        { label: "Confidence Score", val: `${report?.confidence_analysis?.confidence_score ?? confidence}`, suffix: "/100", colorClass: "text-primary" },
     ]
 
     return (
@@ -211,106 +207,6 @@ export default function ReportPage() {
                 </div>
 
                 {/* ── Voice Analysis ── */}
-<<<<<<< HEAD
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                >
-                    <VoiceAnalysis 
-                        wpm={report?.confidence_analysis?.pace_wpm ?? avgPace}
-                        totalFillerWords={report?.confidence_analysis?.filler_word_count ?? fillerWords}
-                        pauseCount={4}
-                        fillerWords={
-                            report?.confidence_analysis?.top_filler_words?.length
-                                ? report.confidence_analysis.top_filler_words
-                                : [
-                                    { word: "um", count: Math.max(1, Math.floor(fillerWords * 0.4)) },
-                                    { word: "like", count: Math.max(1, Math.floor(fillerWords * 0.3)) },
-                                    { word: "you know", count: Math.max(0, Math.floor(fillerWords * 0.2)) },
-                                    { word: "basically", count: Math.max(0, Math.floor(fillerWords * 0.1)) }
-                                ]
-                        }
-                    />
-
-                    {/* ── Confidence Analysis ── */}
-                    <div className="rounded-[20px] p-7 mt-6" style={{ background: '#0E1220', border: '1px solid #1E2535' }}>
-                        <h3 className="font-heading text-[20px] font-extrabold mb-5 flex items-center gap-2">
-                            🧠 Confidence Analysis
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-                            <div className="rounded-[14px] p-5" style={{ background: '#080B14', border: '1px solid #1E2535' }}>
-                                <div className="text-[11px] font-semibold uppercase tracking-[1px] mb-1" style={{ color: '#4A5568' }}>Confidence Score</div>
-                                <div className="font-heading text-[36px] font-extrabold" style={{ color: (report?.confidence_analysis?.confidence_score ?? confidence) >= 70 ? '#4EFFA3' : (report?.confidence_analysis?.confidence_score ?? confidence) >= 50 ? '#FFD166' : '#FF6B6B' }}>
-                                    {report?.confidence_analysis?.confidence_score ?? Math.round(confidence * 10)}
-                                    <span className="text-[16px] font-medium" style={{ color: '#4A5568' }}> / 100</span>
-                                </div>
-                            </div>
-                            <div className="rounded-[14px] p-5" style={{ background: '#080B14', border: '1px solid #1E2535' }}>
-                                <div className="text-[11px] font-semibold uppercase tracking-[1px] mb-1" style={{ color: '#4A5568' }}>Filler Words</div>
-                                <div className="font-heading text-[36px] font-extrabold" style={{ color: (report?.confidence_analysis?.filler_word_count ?? fillerWords) <= 5 ? '#4EFFA3' : '#FF6B6B' }}>
-                                    {report?.confidence_analysis?.filler_word_count ?? fillerWords}
-                                </div>
-                            </div>
-                            <div className="rounded-[14px] p-5" style={{ background: '#080B14', border: '1px solid #1E2535' }}>
-                                <div className="text-[11px] font-semibold uppercase tracking-[1px] mb-1" style={{ color: '#4A5568' }}>Speaking Pace</div>
-                                <div className="font-heading text-[36px] font-extrabold" style={{ color: '#7B61FF' }}>
-                                    {report?.confidence_analysis?.pace_wpm ?? avgPace}
-                                    <span className="text-[14px] font-medium" style={{ color: '#4A5568' }}> WPM</span>
-                                </div>
-                            </div>
-                        </div>
-                        {(report?.confidence_analysis?.issues?.length ?? 0) > 0 && (
-                            <div className="space-y-2">
-                                {report?.confidence_analysis?.issues?.map((issue, i) => (
-                                    <div key={i} className="flex items-start gap-2 text-sm rounded-xl px-4 py-3" style={{ background: 'rgba(255,107,107,0.06)', border: '1px solid rgba(255,107,107,0.15)', color: '#FF6B6B' }}>
-                                        <span>⚠️</span>
-                                        <span>{issue}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* ── STAR Evaluation ── */}
-                    {report?.star_evaluation && (
-                        <div className="rounded-[20px] p-7 mt-6" style={{ background: '#0E1220', border: '1px solid #1E2535' }}>
-                            <h3 className="font-heading text-[20px] font-extrabold mb-2 flex items-center gap-2">
-                                ⭐ STAR Method Evaluation
-                            </h3>
-                            <p className="text-[13px] mb-5" style={{ color: '#8892A4' }}>
-                                Overall STAR Score: <span className="font-bold" style={{ color: report.star_evaluation.star_score >= 70 ? '#4EFFA3' : report.star_evaluation.star_score >= 40 ? '#FFD166' : '#FF6B6B' }}>{report.star_evaluation.star_score}/100</span>
-                            </p>
-                            <div className="space-y-3">
-                                {report.star_evaluation.per_question?.map((star, i) => (
-                                    <div key={i} className="rounded-[14px] p-4" style={{ background: '#080B14', border: '1px solid #1E2535' }}>
-                                        <div className="text-[11px] font-semibold uppercase tracking-[1px] mb-3" style={{ color: '#4A5568' }}>
-                                            Question {i + 1} · STAR Score: {star.star_score}/100
-                                        </div>
-                                        <div className="flex flex-wrap gap-3">
-                                            {(["situation", "task", "action", "result"] as const).map((comp) => (
-                                                <div key={comp} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-bold uppercase tracking-[0.5px]"
-                                                    style={star[comp]
-                                                        ? { background: 'rgba(78,255,163,0.1)', border: '1px solid rgba(78,255,163,0.25)', color: '#4EFFA3' }
-                                                        : { background: 'rgba(255,107,107,0.1)', border: '1px solid rgba(255,107,107,0.25)', color: '#FF6B6B' }
-                                                    }
-                                                >
-                                                    {star[comp] ? '✔' : '✘'} {comp}
-                                                </div>
-                                            ))}
-                                        </div>
-                                        {star.missing_components?.length > 0 && (
-                                            <p className="text-[12px] mt-2" style={{ color: '#8892A4' }}>
-                                                Missing: {star.missing_components.join(", ")}
-                                            </p>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </motion.div>
-=======
                 <div className="rounded-[16px] p-5 mb-8 flex gap-6 flex-wrap bg-card border border-border shadow-sm">
                     {voiceStats.map((v) => (
                         <div key={v.label}>
@@ -321,7 +217,63 @@ export default function ReportPage() {
                         </div>
                     ))}
                 </div>
->>>>>>> 43af45495dfc197909b53ff7992bfae07c08618d
+
+                {/* ── Confidence Analysis ── */}
+                {report?.confidence_analysis && (
+                    <div className="rounded-[20px] p-7 mb-8 bg-card border border-border shadow-sm">
+                        <h3 className="font-heading text-[20px] font-extrabold mb-5 flex items-center gap-2">
+                            🧠 Confidence Analysis
+                        </h3>
+                        {(report.confidence_analysis.issues?.length ?? 0) > 0 && (
+                            <div className="space-y-2">
+                                {report.confidence_analysis.issues?.map((issue, i) => (
+                                    <div key={i} className="flex items-start gap-2 text-sm rounded-xl px-4 py-3 bg-destructive/5 border border-destructive/15 text-destructive">
+                                        <span>⚠️</span>
+                                        <span>{issue}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* ── STAR Evaluation ── */}
+                {report?.star_evaluation && (
+                    <div className="rounded-[20px] p-7 mb-8 bg-card border border-border shadow-sm">
+                        <h3 className="font-heading text-[20px] font-extrabold mb-2 flex items-center gap-2">
+                            ⭐ STAR Method Evaluation
+                        </h3>
+                        <p className="text-[13px] mb-5 text-muted-foreground">
+                            Overall STAR Score: <span className={cn("font-bold", report.star_evaluation.star_score >= 70 ? "text-primary" : report.star_evaluation.star_score >= 40 ? "text-accent-4" : "text-destructive")}>{report.star_evaluation.star_score}/100</span>
+                        </p>
+                        <div className="space-y-3">
+                            {report.star_evaluation.per_question?.map((star, i) => (
+                                <div key={i} className="rounded-[14px] p-4 bg-muted/30 border border-border">
+                                    <div className="text-[11px] font-semibold uppercase tracking-[1px] mb-3 text-muted-foreground">
+                                        Question {i + 1} · STAR Score: {star.star_score}/100
+                                    </div>
+                                    <div className="flex flex-wrap gap-3">
+                                        {(["situation", "task", "action", "result"] as const).map((comp) => (
+                                            <div key={comp} className={cn(
+                                                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-bold uppercase tracking-[0.5px] border",
+                                                star[comp]
+                                                    ? "bg-primary/10 border-primary/25 text-primary"
+                                                    : "bg-destructive/10 border-destructive/25 text-destructive"
+                                            )}>
+                                                {star[comp] ? '✔' : '✘'} {comp}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {star.missing_components?.length > 0 && (
+                                        <p className="text-[12px] mt-2 text-muted-foreground">
+                                            Missing: {star.missing_components.join(", ")}
+                                        </p>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* ── Q&A Breakdown ── */}
                 <div className="mb-12">

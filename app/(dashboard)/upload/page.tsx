@@ -214,7 +214,7 @@ export default function UploadPage() {
                         <div>
                             <label className="block text-[13px] font-bold uppercase tracking-wider mb-4 text-muted-foreground">Interview Focus</label>
                             <div className="flex flex-wrap gap-2">
-                                {interviewTypes.slice(0, 3).map((t) => <Tag key={t} label={t} selected={interviewType === t} onClick={() => setInterviewType(t)} />)}
+                                {interviewTypes.map((t) => <Tag key={t.value} label={t.label} selected={interviewType.value === t.value} onClick={() => setInterviewType(t)} />)}
                             </div>
                         </div>
                         <div>
@@ -239,68 +239,9 @@ export default function UploadPage() {
                     </div>
                 </div>
 
-<<<<<<< HEAD
-                {/* Experience */}
-                <div className="mb-7">
-                    <label className="block text-[13px] font-semibold uppercase tracking-[0.5px] mb-2.5" style={{ color: '#8892A4' }}>Experience Level</label>
-                    <div className="flex flex-wrap gap-2.5">
-                        {expLevels.map((e) => (
-                            <button
-                                key={e}
-                                onClick={() => setExperience(e)}
-                                className="px-4 py-2 rounded-full text-[13px] font-medium border transition-all duration-200"
-                                style={experience === e
-                                    ? { background: 'rgba(123,97,255,0.15)', borderColor: '#7B61FF', color: '#7B61FF' }
-                                    : { background: 'transparent', borderColor: '#1E2535', color: '#8892A4' }
-                                }
-                            >
-                                {e}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Interview Type */}
-                <div className="mb-7">
-                    <label className="block text-[13px] font-semibold uppercase tracking-[0.5px] mb-2.5" style={{ color: '#8892A4' }}>Interview Type</label>
-                    <div className="flex flex-wrap gap-2.5">
-                        {interviewTypes.map((t) => <Tag key={t.value} label={t.label} selected={interviewType.value === t.value} onClick={() => setInterviewType(t)} />)}
-                    </div>
-                </div>
-
-                {/* Difficulty */}
-                <div className="mb-7">
-                    <label className="block text-[13px] font-semibold uppercase tracking-[0.5px] mb-2.5" style={{ color: '#8892A4' }}>Difficulty</label>
-                    <div className="flex gap-2">
-                        {difficulties.map((d) => (
-                            <button
-                                key={d.value}
-                                onClick={() => setDifficulty(d.value as "easy" | "medium" | "hard")}
-                                className="flex-1 py-3 rounded-xl text-[13px] font-medium border text-center transition-all duration-200"
-                                style={difficulty === d.value
-                                    ? d.value === "easy"
-                                        ? { background: 'rgba(78,255,163,0.1)', borderColor: '#4EFFA3', color: '#4EFFA3' }
-                                        : d.value === "medium"
-                                        ? { background: 'rgba(255,209,102,0.1)', borderColor: '#FFD166', color: '#FFD166' }
-                                        : { background: 'rgba(255,107,107,0.1)', borderColor: '#FF6B6B', color: '#FF6B6B' }
-                                    : { background: 'transparent', borderColor: '#1E2535', color: '#8892A4' }
-                                }
-                            >
-                                {d.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Persona */}
-                <div className="mb-10">
-                    <label className="block text-[13px] font-semibold uppercase tracking-[0.5px] mb-2.5" style={{ color: '#8892A4' }}>Interviewer Persona</label>
-                    <div className="flex flex-wrap gap-2.5">
-=======
                 <div className="mb-12">
                     <label className="block text-[13px] font-bold uppercase tracking-wider mb-4 text-muted-foreground text-center">Interviewer Persona</label>
                     <div className="flex flex-wrap justify-center gap-2">
->>>>>>> 43af45495dfc197909b53ff7992bfae07c08618d
                         {personas.map((p) => (
                             <button
                                 key={p}
