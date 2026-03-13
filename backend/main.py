@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from config import get_settings
 from database import Base, engine
-from routers import sessions, questions, answers, transcribe, tts, report, dashboard
+from routers import sessions, questions, answers, transcribe, tts, report, dashboard, resume_router
 
 settings = get_settings()
 
@@ -45,6 +45,7 @@ app.include_router(transcribe.router)
 app.include_router(tts.router)
 app.include_router(report.router)
 app.include_router(dashboard.router)
+app.include_router(resume_router.router)
 
 
 # ─── Health Check ─────────────────────────────────────────────────────────────
