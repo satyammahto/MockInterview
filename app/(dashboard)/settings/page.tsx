@@ -13,24 +13,31 @@ export default function SettingsPage() {
         { id: "privacy", label: "Privacy & Security", icon: Shield },
     ]
 
+    const panelStyle: React.CSSProperties = {
+        background: 'rgba(10,14,26,0.7)',
+        border: '1px solid rgba(255,255,255,0.07)',
+        backdropFilter: 'blur(20px)',
+    }
+
     return (
-        <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500 pb-20">
+        <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-400 pb-20">
             <div>
-                <h1 className="font-heading text-3xl font-extrabold tracking-tight mb-2">Settings</h1>
-                <p className="text-muted-foreground">Manage your account preferences and application settings.</p>
+                <h1 className="font-heading text-3xl font-extrabold tracking-tight mb-1.5">Settings</h1>
+                <p className="text-muted-foreground text-sm">Manage your account preferences and application settings.</p>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-8">
+            <div className="flex flex-col md:flex-row gap-6">
                 {/* Settings Nav */}
-                <aside className="w-full md:w-64 shrink-0">
-                    <nav className="flex flex-col gap-1">
+                <aside className="w-full md:w-56 shrink-0">
+                    <nav className="flex flex-col gap-0.5">
                         {tabs.map((tab, i) => (
                             <button
                                 key={tab.id}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${i === 1
-                                        ? "bg-accent/10 text-accent border border-accent/20"
-                                        : "text-muted-foreground hover:bg-surface hover:text-foreground"
-                                    }`}
+                                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 text-left"
+                                style={i === 1
+                                    ? { background: 'rgba(78,255,163,0.08)', border: '1px solid rgba(78,255,163,0.18)', color: 'var(--accent-1)' }
+                                    : { background: 'transparent', border: '1px solid transparent', color: 'var(--muted-foreground)' }
+                                }
                             >
                                 <tab.icon className="w-4 h-4" />
                                 {tab.label}
@@ -40,57 +47,77 @@ export default function SettingsPage() {
                 </aside>
 
                 {/* Settings Content */}
-                <div className="flex-1 space-y-8">
-                    <div className="bg-surface border border-border rounded-3xl p-8">
-                        <h2 className="font-heading text-xl font-bold mb-6">Appearance</h2>
+                <div className="flex-1 space-y-5">
+                    <div className="rounded-2xl p-7" style={panelStyle}>
+                        <h2 className="font-heading text-lg font-bold mb-7 tracking-tight">Appearance</h2>
 
-                        <div className="space-y-6">
+                        <div className="space-y-7">
                             <div>
-                                <label className="text-sm font-bold text-foreground mb-3 block">Theme Preference</label>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <label className="text-sm font-bold text-foreground mb-4 block">Theme Preference</label>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     <button
                                         onClick={() => setTheme("light")}
-                                        className={`flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all ${theme === 'light' ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/40 bg-background'}`}
+                                        className="flex flex-col items-center gap-2.5 p-4 rounded-xl transition-all duration-150 hover:-translate-y-px"
+                                        style={theme === 'light'
+                                            ? { border: '2px solid rgba(78,255,163,0.5)', background: 'rgba(78,255,163,0.05)' }
+                                            : { border: '1px solid rgba(255,255,255,0.09)', background: 'rgba(255,255,255,0.02)' }
+                                        }
                                     >
-                                        <Sun className="w-6 h-6" />
+                                        <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                                            <Sun className="w-5 h-5" />
+                                        </div>
                                         <span className="text-sm font-medium">Light</span>
                                     </button>
 
                                     <button
                                         onClick={() => setTheme("dark")}
-                                        className={`flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all ${theme === 'dark' ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/40 bg-background'}`}
+                                        className="flex flex-col items-center gap-2.5 p-4 rounded-xl transition-all duration-150 hover:-translate-y-px"
+                                        style={theme === 'dark'
+                                            ? { border: '2px solid rgba(78,255,163,0.5)', background: 'rgba(78,255,163,0.05)' }
+                                            : { border: '1px solid rgba(255,255,255,0.09)', background: 'rgba(255,255,255,0.02)' }
+                                        }
                                     >
-                                        <Moon className="w-6 h-6" />
+                                        <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                                            <Moon className="w-5 h-5" />
+                                        </div>
                                         <span className="text-sm font-medium">Dark</span>
                                     </button>
 
                                     <button
                                         onClick={() => setTheme("system")}
-                                        className={`flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all ${theme === 'system' ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/40 bg-background'}`}
+                                        className="flex flex-col items-center gap-2.5 p-4 rounded-xl transition-all duration-150 hover:-translate-y-px"
+                                        style={theme === 'system'
+                                            ? { border: '2px solid rgba(78,255,163,0.5)', background: 'rgba(78,255,163,0.05)' }
+                                            : { border: '1px solid rgba(255,255,255,0.09)', background: 'rgba(255,255,255,0.02)' }
+                                        }
                                     >
-                                        <Monitor className="w-6 h-6" />
+                                        <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                                            <Monitor className="w-5 h-5" />
+                                        </div>
                                         <span className="text-sm font-medium">System</span>
                                     </button>
                                 </div>
                             </div>
 
-                            <div className="pt-6 border-t border-border">
+                            <div className="pt-6" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
                                 <label className="text-sm font-bold text-foreground mb-1 block">Reduce Motion</label>
                                 <p className="text-xs text-muted-foreground mb-4">Disable animations and page transitions.</p>
                                 <label className="relative inline-flex items-center cursor-pointer">
                                     <input type="checkbox" className="sr-only peer" />
-                                    <div className="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+                                    <div className="w-10 h-5 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-accent"></div>
                                 </label>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-destructive/5 border border-destructive/20 rounded-3xl p-8">
-                        <h2 className="font-heading text-xl font-bold text-destructive mb-2 flex items-center gap-2">
+                    {/* Danger Zone */}
+                    <div className="rounded-2xl p-7" style={{ background: 'rgba(255,107,107,0.03)', border: '1px solid rgba(255,107,107,0.15)' }}>
+                        <h2 className="font-heading text-base font-bold text-destructive mb-2 flex items-center gap-2">
+                            <LogOut className="w-4 h-4" />
                             Danger Zone
                         </h2>
-                        <p className="text-sm text-muted-foreground mb-6">Permanently delete your account and all associated interview data.</p>
-                        <button className="px-6 py-2.5 bg-destructive/10 text-destructive border border-destructive/20 font-bold text-sm rounded-lg hover:bg-destructive hover:text-white transition-colors">
+                        <p className="text-sm text-muted-foreground mb-5">Permanently delete your account and all associated interview data.</p>
+                        <button className="px-5 py-2 font-heading font-bold text-sm rounded-lg transition-all duration-150 hover:-translate-y-px" style={{ background: 'rgba(255,107,107,0.08)', border: '1px solid rgba(255,107,107,0.25)', color: 'var(--accent-3)' }}>
                             Delete Account
                         </button>
                     </div>
