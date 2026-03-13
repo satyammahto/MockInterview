@@ -1,87 +1,135 @@
+"""
+Resume Parser Service.
+Extracts structured data (skills, projects, experience, target role)
+from a PDF resume. Uses Groq Llama3 (falls back to Gemini if available).
+"""
 import io
+import re
 import json
-import pdfplumber
-import google.generativeai as genai
+import logging
+from typing import Optional
 
 from models.resume import ResumeExtractionResponse
-from config import get_settings
 
-settings = get_settings()
+logger = logging.getLogger(__name__)
+
 
 def extract_text_from_pdf(file_bytes: bytes) -> str:
-    """Extracts text from a uploaded PDF file using pdfplumber."""
+    """Extract text from a PDF file using pdfplumber."""
     text = ""
     try:
+        import pdfplumber
         with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
             for page in pdf.pages:
                 extracted = page.extract_text()
                 if extracted:
                     text += extracted + "\n"
     except Exception as e:
-        print(f"[ResumeParser] Error reading PDF: {e}")
+        logger.error(f"[ResumeParser] Error reading PDF: {e}")
         raise ValueError("Invalid PDF format or unable to extract text.")
-        
     return text.strip()
+
+
+def _extract_json(text: str) -> Optional[dict]:
+    """Robustly extract JSON from LLM response."""
+    text = text.strip()
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+    match = re.search(r'\{[\s\S]*\}', text)
+    if match:
+        try:
+            return json.loads(match.group())
+        except json.JSONDecodeError:
+            pass
+    return None
+
+
+EXTRACT_PROMPT = """You are an expert AI resume parser.
+
+Extract the following fields from the resume text below and return ONLY a raw JSON object (no markdown, no explanation).
+
+Fields to extract:
+- "skills": list of strings (programming languages, tools, frameworks, soft skills)
+- "projects": list of strings (brief descriptions of projects)
+- "experience": list of strings (job roles and responsibilities)
+- "target_role": single string (inferred target job role, e.g. "Software Engineer")
+
+Resume Text:
+{resume_text}
+
+Return ONLY valid JSON."""
 
 
 async def extract_resume_data(file_bytes: bytes) -> ResumeExtractionResponse:
     """
-    Extracts structured data (skills, projects, experience, role) from a PDF 
-    resume using the Gemini API.
+    Extract structured data from a PDF resume using AI.
+    Tries Groq first, then Gemini if configured.
     """
-    # 1. Extract raw text from PDF
+    from config import get_settings
+    settings = get_settings()
+
     resume_text = extract_text_from_pdf(file_bytes)
     if not resume_text:
         raise ValueError("No text could be extracted from the provided resume.")
 
-    # 2. Configure Gemini API
-    # Fallback to GROQ key if GEMINI key isn't explicitly set, just in case user re-used keys or it's empty
-    api_key = settings.GEMINI_API_KEY or settings.GROQ_API_KEY
-    if not api_key:
-        raise ValueError("AI API Key is not configured.")
+    prompt = EXTRACT_PROMPT.format(resume_text=resume_text[:5000])
 
-    genai.configure(api_key=api_key)
-    
-    # Use the recommended model for general text tasks
-    model = genai.GenerativeModel("gemini-1.5-pro")
+    # Try Groq first (preferred)
+    if settings.has_groq:
+        result = await _extract_with_groq(prompt, settings)
+        if result:
+            return ResumeExtractionResponse(**result)
 
-    # 3. Define the prompt
-    prompt = f"""
-    You are an expert AI resume parser. I will provide you with the raw text extracted from a resume. 
-    Your task is to extract the following information and return ONLY a valid JSON object. Do not include any markdown formatting (like ```json), just the raw JSON string.
-    
-    Extract these fields:
-    - "skills": A list of strings representing the candidate's skills (e.g., programming languages, tools, soft skills).
-    - "projects": A list of strings, each summarizing a distinct project mentioned.
-    - "experience": A list of strings, each summarizing a distinct work experience or role.
-    - "target_role": A single string inferring the candidate's target job role (e.g., "Software Engineer", "Data Scientist"). If unclear, make a best guess based on the skills and experience.
-    
-    Resume Text:
-    {resume_text}
-    """
+    # Try Gemini as fallback
+    if settings.has_gemini:
+        result = await _extract_with_gemini(prompt, settings)
+        if result:
+            return ResumeExtractionResponse(**result)
 
-    # 4. Call Gemini
+    raise ValueError(
+        "AI API key not configured. Please set GROQ_API_KEY in backend/.env"
+    )
+
+
+async def _extract_with_groq(prompt: str, settings) -> Optional[dict]:
+    """Extract resume data using Groq."""
     try:
-        response = model.generate_content(prompt)
-        response_text = response.text.strip()
-        
-        # Clean up any potential markdown formatting the AI might still add despite instructions
-        if response_text.startswith("```json"):
-            response_text = response_text[7:]
-        if response_text.endswith("```"):
-            response_text = response_text[:-3]
-            
-        response_text = response_text.strip()
-
-        # 5. Parse JSON
-        parsed_data = json.loads(response_text)
-        
-        # 6. Validate and format output using Pydantic
-        return ResumeExtractionResponse(**parsed_data)
-
-    except json.JSONDecodeError as e:
-        print(f"[ResumeParser] JSON Parse Error: {e}\nResponse was: {response_text}")
-        raise ValueError("Failed to parse the AI response into valid JSON.")
+        from groq import Groq
+        client = Groq(api_key=settings.GROQ_API_KEY)
+        response = client.chat.completions.create(
+            model=settings.GROQ_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.2,
+            max_tokens=1500,
+        )
+        content = response.choices[0].message.content
+        result = _extract_json(content)
+        if result:
+            logger.info("[ResumeParser] Groq extraction successful.")
+            return result
+        logger.warning("[ResumeParser] Groq returned unparseable response.")
+        return None
     except Exception as e:
-        print(f"[ResumeParser] Gemini API Error: {e}")
-        raise ValueError(f"An error occurred while communicating with the AI: {str(e)}")
+        logger.warning(f"[ResumeParser] Groq extraction failed: {e}")
+        return None
+
+
+async def _extract_with_gemini(prompt: str, settings) -> Optional[dict]:
+    """Extract resume data using Gemini as fallback."""
+    try:
+        import google.generativeai as genai
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        model = genai.GenerativeModel(settings.GEMINI_MODEL)
+        response = model.generate_content(prompt)
+        content = response.text
+        result = _extract_json(content)
+        if result:
+            logger.info("[ResumeParser] Gemini extraction successful.")
+            return result
+        logger.warning("[ResumeParser] Gemini returned unparseable response.")
+        return None
+    except Exception as e:
+        logger.warning(f"[ResumeParser] Gemini extraction failed: {e}")
+        return None

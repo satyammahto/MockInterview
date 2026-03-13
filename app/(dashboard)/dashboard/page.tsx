@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Activity, TrendingUp, Clock, Target, Calendar, Loader2 } from "lucide-react"
+import { ProgressChart } from "@/components/dashboard/ProgressChart"
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 
@@ -129,15 +130,13 @@ export default function DashboardPage() {
                                 <p className="text-muted-foreground text-sm">Complete your first interview to see trends.</p>
                             </div>
                         ) : (
-                            trend.map((height, i) => (
-                                <div key={i} className="w-full relative group self-end">
-                                    <div
-                                        className="w-full rounded-t-sm transition-all duration-200 group-hover:opacity-100 opacity-60"
-                                        style={{ height: `${Math.max(height, 4)}%`, background: 'linear-gradient(to top, rgba(78,255,163,0.25), rgba(78,255,163,0.1))' }}
-                                    />
-                                    <div className="absolute top-0 left-0 w-full h-[2px] bg-accent rounded-t-sm" />
-                                </div>
-                            ))
+                            <ProgressChart 
+                                data={trend.map((score, i) => ({
+                                    date: history[history.length - 1 - i]?.date || `Session ${i+1}`,
+                                    score: score,
+                                    role: history[history.length - 1 - i]?.role || 'Mock Interview'
+                                }))} 
+                            />
                         )}
                     </div>
                 </div>
