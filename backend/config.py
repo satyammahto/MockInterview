@@ -1,22 +1,31 @@
-from pydantic_settings import BaseSettings
+from dataclasses import dataclass
 from functools import lru_cache
+from decouple import config, Csv
 
 
-class Settings(BaseSettings):
-    DATABASE_URL: str = "mysql+pymysql://root:password@localhost:3306/prepsense_db"
-    GROQ_API_KEY: str = ""
-    GROQ_MODEL: str = "llama3-8b-8192"
-    WHISPER_MODEL: str = "base"
-    TTS_MODEL: str = "tts_models/en/ljspeech/tacotron2-DDC"
-    TTS_USE_GPU: bool = False
-    FRONTEND_URL: str = "http://localhost:3000"
-    DEBUG: bool = True
-    UPLOAD_DIR: str = "./uploads"
-
-    class Config:
-        env_file = ".env"
+@dataclass
+class Settings:
+    DATABASE_URL: str
+    GROQ_API_KEY: str
+    GROQ_MODEL: str
+    WHISPER_MODEL: str
+    TTS_MODEL: str
+    TTS_USE_GPU: bool
+    FRONTEND_URL: str
+    DEBUG: bool
+    UPLOAD_DIR: str
 
 
 @lru_cache()
 def get_settings() -> Settings:
-    return Settings()
+    return Settings(
+        DATABASE_URL=config("DATABASE_URL"),
+        GROQ_API_KEY=config("GROQ_API_KEY", default=""),
+        GROQ_MODEL=config("GROQ_MODEL", default="llama3-8b-8192"),
+        WHISPER_MODEL=config("WHISPER_MODEL", default="base"),
+        TTS_MODEL=config("TTS_MODEL", default="tts_models/en/ljspeech/tacotron2-DDC"),
+        TTS_USE_GPU=config("TTS_USE_GPU", default=False, cast=bool),
+        FRONTEND_URL=config("FRONTEND_URL", default="http://localhost:3000"),
+        DEBUG=config("DEBUG", default=True, cast=bool),
+        UPLOAD_DIR=config("UPLOAD_DIR", default="./uploads"),
+    )
