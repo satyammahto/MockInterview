@@ -3,6 +3,11 @@
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
+import { motion } from "framer-motion"
+
+import { ScoreCard } from "@/components/report/ScoreCard"
+import { VoiceAnalysis } from "@/components/report/VoiceAnalysis"
+import { ComparisonView } from "@/components/report/ComparisonView"
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 
@@ -111,7 +116,12 @@ export default function ReportPage() {
             <div className="max-w-[1000px] mx-auto px-6 pt-16">
 
                 {/* ── Header ── */}
-                <div className="flex justify-between items-start mb-12 flex-wrap gap-6">
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="flex justify-between items-start mb-12 flex-wrap gap-6"
+                >
                     <div>
                         <div className="text-[13px] font-semibold uppercase tracking-[1px] mb-2" style={{ color: '#4A5568' }}>Interview Complete</div>
                         <h1 className="font-heading text-[40px] font-extrabold tracking-[-1px] mb-2">Your Report Card</h1>
@@ -129,31 +139,25 @@ export default function ReportPage() {
 
                     <div className="flex items-center gap-8">
                         {/* Score Ring */}
-                        <div className="flex flex-col items-center gap-2">
-                            <div
-                                className="w-[130px] h-[130px] rounded-full flex items-center justify-center"
-                                style={{ background: `conic-gradient(#4EFFA3 0% ${overall}%, #1E2535 ${overall}% 100%)` }}
-                            >
-                                <div className="w-[100px] h-[100px] rounded-full flex flex-col items-center justify-center" style={{ background: '#080B14' }}>
-                                    <div className="font-heading text-[32px] font-extrabold leading-none">{overall}</div>
-                                    <div className="text-[11px] font-semibold tracking-[1px] mt-0.5" style={{ color: '#4A5568' }}>/100</div>
-                                </div>
-                            </div>
-                            <div className="text-[13px] font-semibold" style={{ color: '#8892A4' }}>Overall Score</div>
-                        </div>
+                        <ScoreCard score={overall} label="Overall Score" color={scoreColor(overall)} />
 
                         {/* CTA */}
                         <div className="flex flex-col gap-2">
-                            <button className="flex items-center gap-2 px-5 py-3 rounded-xl font-heading font-bold text-sm text-black" style={{ background: '#4EFFA3' }}>
+                            <button className="flex items-center gap-2 px-5 py-3 rounded-xl font-heading font-bold text-sm text-black transition-transform hover:scale-105" style={{ background: '#4EFFA3' }}>
                                 ⬇ Download PDF Report
                             </button>
-                            <button onClick={() => router.push("/upload")} className="text-[12px] text-center cursor-pointer" style={{ color: '#4A5568' }}>🔄 Try Again</button>
+                            <button onClick={() => router.push("/upload")} className="text-[12px] text-center cursor-pointer hover:text-white transition-colors" style={{ color: '#4A5568' }}>🔄 Try Again</button>
                         </div>
                     </div>
-                </div>
+                </motion.div>
 
                 {/* ── Score Cards ── */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.1 }}
+                    className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12"
+                >
                     {[
                         { label: "Clarity", val: clarity, color: '#4EFFA3', pct: clarity * 10 },
                         { label: "Confidence", val: confidence, color: '#FFD166', pct: confidence * 10 },
@@ -167,32 +171,45 @@ export default function ReportPage() {
                             <div className="text-[12px] font-semibold uppercase tracking-[1px] mb-2" style={{ color: '#4A5568' }}>{s.label}</div>
                             <div className="font-heading text-[40px] font-extrabold leading-none mb-3" style={{ color: s.color }}>{s.val}</div>
                             <div className="rounded-full h-1" style={{ background: '#1E2535' }}>
-                                <div className="h-full rounded-full" style={{ width: `${s.pct}%`, background: s.color }} />
+                                <motion.div 
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${s.pct}%` }}
+                                    transition={{ duration: 1, delay: 0.3 }}
+                                    className="h-full rounded-full" 
+                                    style={{ background: s.color }} 
+                                />
                             </div>
                         </div>
                     ))}
-                </div>
+                </motion.div>
 
                 {/* ── Voice Analysis ── */}
-                <div className="rounded-[16px] p-5 mb-8 flex gap-6 flex-wrap" style={{ background: '#141926', border: '1px solid #1E2535' }}>
-                    {[
-                        { label: 'Total "Umm/Uh" Used', val: `${fillerWords}`, suffix: "times", color: '#FF6B6B' },
-                        { label: "Avg Speaking Pace", val: `${avgPace}`, suffix: "WPM", color: '#FFD166' },
-                        { label: "Longest Silence", val: "8.2s", suffix: "Q7", color: '#FF6B6B' },
-                        { label: "Best Question", val: "Q4", suffix: "9.1/10", color: '#4EFFA3' },
-                    ].map((v) => (
-                        <div key={v.label}>
-                            <div className="text-[11px] font-bold uppercase tracking-[1px] mb-1.5" style={{ color: '#4A5568' }}>{v.label}</div>
-                            <div className="font-heading text-[36px] font-extrabold leading-none" style={{ color: v.color }}>
-                                {v.val} <span className="font-body text-sm" style={{ color: '#4A5568' }}>{v.suffix}</span>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                >
+                    <VoiceAnalysis 
+                        wpm={avgPace}
+                        totalFillerWords={fillerWords}
+                        pauseCount={4} // Mock data for now since backend doesn't return this yet
+                        fillerWords={[
+                            { word: "um", count: Math.max(1, Math.floor(fillerWords * 0.4)) },
+                            { word: "like", count: Math.max(1, Math.floor(fillerWords * 0.3)) },
+                            { word: "you know", count: Math.max(0, Math.floor(fillerWords * 0.2)) },
+                            { word: "basically", count: Math.max(0, Math.floor(fillerWords * 0.1)) }
+                        ]}
+                    />
+                </motion.div>
 
                 {/* ── Q&A Breakdown ── */}
-                <div className="mb-12">
-                    <h2 className="font-heading text-[24px] font-extrabold mb-6">Question-by-Question Breakdown</h2>
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                    className="mb-12"
+                >
+                    <h2 className="font-heading text-[24px] font-extrabold mb-6 mt-12">Question-by-Question Breakdown</h2>
 
                     {(report?.answers ?? DEMO_ANSWERS).map((qa, i) => (
                         <div
@@ -210,36 +227,36 @@ export default function ReportPage() {
                                     </div>
                                     <div className="text-base font-semibold">{qa.question_text}</div>
                                 </div>
-                                <div className="px-3.5 py-1 rounded-full text-[13px] font-bold whitespace-nowrap" style={scoreBadgeStyle(qa.score)}>
+                                <div className="px-3.5 py-1 rounded-full text-[13px] font-bold whitespace-nowrap" style={{...scoreBadgeStyle(qa.score), transition: 'all 0.3s'}}>
                                     {qa.score.toFixed(1)} / 10
                                 </div>
                             </div>
 
                             {expandedQ === i && (
-                                <>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                        <div className="rounded-xl p-4 text-sm leading-[1.7]" style={{ background: 'rgba(123,97,255,0.06)', border: '1px solid rgba(123,97,255,0.2)' }}>
-                                            <div className="text-[11px] font-bold uppercase tracking-[1px] mb-2" style={{ color: '#7B61FF' }}>Your Answer</div>
-                                            <p style={{ color: '#8892A4' }}>{qa.your_answer}</p>
-                                        </div>
-                                        <div className="rounded-xl p-4 text-sm leading-[1.7]" style={{ background: 'rgba(78,255,163,0.04)', border: '1px solid rgba(78,255,163,0.2)' }}>
-                                            <div className="text-[11px] font-bold uppercase tracking-[1px] mb-2" style={{ color: '#4EFFA3' }}>Ideal Answer Structure</div>
-                                            <p style={{ color: '#8892A4' }}>{qa.ideal_answer}</p>
-                                        </div>
-                                    </div>
-                                    {qa.feedback && (
-                                        <div className="mt-4 rounded-[10px] px-4 py-3.5 text-[13px] leading-[1.6]" style={{ background: 'rgba(255,209,102,0.06)', border: '1px solid rgba(255,209,102,0.15)', color: '#8892A4' }}>
-                                            <strong style={{ color: '#FFD166' }}>💡 What to improve:</strong> {qa.feedback}
-                                        </div>
-                                    )}
-                                </>
+                                <motion.div 
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    className="mt-4"
+                                >
+                                    <ComparisonView 
+                                        yourAnswer={qa.your_answer} 
+                                        idealAnswer={qa.ideal_answer} 
+                                        feedback={qa.feedback}
+                                    />
+                                </motion.div>
                             )}
                         </div>
                     ))}
-                </div>
+                </motion.div>
 
                 {/* ── Tips ── */}
-                <div className="rounded-[24px] p-9 mb-12" style={{ background: '#0E1220', border: '1px solid #1E2535' }}>
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.4 }}
+                    className="rounded-[24px] p-9 mb-12" 
+                    style={{ background: '#0E1220', border: '1px solid #1E2535' }}
+                >
                     <h2 className="font-heading text-[24px] font-extrabold mb-6">Personal Coaching Tips</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {tipCards.map((tip) => {
@@ -250,15 +267,20 @@ export default function ReportPage() {
                                 ? (report?.improvements?.[0] ?? "Reduce filler words. Record yourself for 2 minutes daily — awareness alone reduces them 60%.")
                                 : tip.custom
                             return (
-                                <div key={tip.title} className="rounded-[16px] p-5 border" style={style.card}>
+                                <motion.div 
+                                    whileHover={{ scale: 1.02, y: -5 }}
+                                    key={tip.title} 
+                                    className="rounded-[16px] p-5 border cursor-default" 
+                                    style={style.card}
+                                >
                                     <div className="text-[28px] mb-3">{tip.icon}</div>
                                     <h4 className="font-heading text-[15px] font-bold mb-1.5">{tip.title}</h4>
                                     <p className="text-[13px] leading-[1.6]" style={{ color: '#8892A4' }}>{text}</p>
-                                </div>
+                                </motion.div>
                             )
                         })}
                     </div>
-                </div>
+                </motion.div>
 
                 {/* ── Actions ── */}
                 <div className="flex gap-4 flex-wrap">
