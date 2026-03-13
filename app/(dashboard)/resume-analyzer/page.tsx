@@ -1,14 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Upload, FileText, CheckCircle2, XCircle, Brain, Briefcase, Languages, Target, Search, ArrowRight, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Progress } from '@/components/ui/progress'
+
 
 interface AnalysisResult {
     score: number
@@ -199,7 +199,7 @@ export default function ResumeAnalyzerPage() {
                                 <div>
                                     <h3 className="font-bold text-lg mb-2 capitalize">{result.role}</h3>
                                     <p className="text-sm text-muted-foreground italic">
-                                        "{result.score > 80 ? 'Excellent match for the role!' : result.score > 60 ? 'Good potential, but some gaps found.' : 'Requires significant optimization for this role.'}"
+                                        &quot;{result.score > 80 ? 'Excellent match for the role!' : result.score > 60 ? 'Good potential, but some gaps found.' : 'Requires significant optimization for this role.'}&quot;
                                     </p>
                                 </div>
                                 <Button variant="outline" className="w-full" onClick={() => setResult(null)}>
